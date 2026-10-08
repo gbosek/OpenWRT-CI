@@ -7,7 +7,7 @@ if [[ "$WRT_CONFIG" != "AIROHA" ]]; then
 fi
 
 mkdir -p ./package/custom
-for name in mwan4 luci-app-mwan4 luci-app-pon-status luci-app-airoha-npu; do
+for name in mwan4 luci-app-mwan4 luci-app-pon-status luci-app-airoha-npu xg2010g-rps; do
 	# Reject duplicate package definitions instead of silently using another feed.
 	if find ./feeds -name Makefile -path "*/$name/Makefile" | grep -q .; then
 		echo "Unexpected duplicate package: $name" >&2

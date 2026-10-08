@@ -1,0 +1,8 @@
+#!/bin/sh
+[ "$(cat /tmp/sysinfo/board_name 2>/dev/null)" = "gemtek,xg2010g" ] || exit 0
+uci -q get 'network.@globals[0]' >/dev/null || uci add network globals >/dev/null
+uci set 'network.@globals[0].packet_steering=2'
+uci set 'network.@globals[0].steering_flows=4096'
+uci commit network
+/etc/init.d/packet_steering enable
+exit 0
