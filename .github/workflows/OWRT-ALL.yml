@@ -55,6 +55,8 @@ jobs:
       WRT_REPO: https://github.com/${{matrix.SOURCE}}.git
       #源码分支
       WRT_BRANCH: ${{matrix.BRANCH}}
+      #以 AIROHA-VIKINGYFY-owrt-26.10.08-11.11.17 的源码提交为基线
+      WRT_REVISION: a38520034ee4bdd25dd6e88c4c59261f289ee17e
       #源码名称
       WRT_SOURCE: ${{matrix.SOURCE}}
       #插件调整

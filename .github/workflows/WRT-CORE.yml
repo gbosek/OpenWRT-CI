@@ -34,6 +34,10 @@ on:
       WRT_BRANCH:
         required: true
         type: string
+      WRT_REVISION:
+        required: false
+        default: ''
+        type: string
       WRT_SOURCE:
         required: true
         type: string
@@ -56,6 +60,7 @@ env:
   WRT_PW: ${{inputs.WRT_PW}}
   WRT_REPO: ${{inputs.WRT_REPO}}
   WRT_BRANCH: ${{inputs.WRT_BRANCH}}
+  WRT_REVISION: ${{inputs.WRT_REVISION}}
   WRT_SOURCE: ${{inputs.WRT_SOURCE}}
   WRT_PACKAGE: ${{inputs.WRT_PACKAGE}}
   WRT_TEST: ${{inputs.WRT_TEST}}
@@ -118,9 +123,14 @@ jobs:
       - name: Clone Code
         id: clone-code
         run: |
-          git clone --depth=1 --single-branch --branch $WRT_BRANCH $WRT_REPO ./wrt/
+          git clone --depth=1 --single-branch --branch "$WRT_BRANCH" "$WRT_REPO" ./wrt/
 
           cd ./wrt/
+          if [ -n "$WRT_REVISION" ]; then
+            git fetch --depth=1 origin "$WRT_REVISION"
+            git checkout --detach FETCH_HEAD
+            test "$(git rev-parse HEAD)" = "$WRT_REVISION"
+          fi
           WRT_HASH=$(git rev-parse HEAD)
           echo "WRT_HASH=$WRT_HASH" >> $GITHUB_ENV
           echo "WRT_CACHE_KEY=$WRT_CACHE_PREFIX-$WRT_HASH" >> $GITHUB_ENV
