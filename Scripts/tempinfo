@@ -1,0 +1,42 @@
+#!/bin/sh
+# SPDX-License-Identifier: GPL-2.0-only
+# System temperature data for autocore/luci.getTempInfo on Airoha.
+# PON temperature is inserted by the shared LuCI overview renderer.
+
+THERMAL_PATH=/sys/class/thermal
+IEEE_PATH=/sys/class/ieee80211
+NET_PATH=/sys/class/net
+
+fmt_c() {
+	[ -r "$1" ] || return
+	awk '/^[+-]?[0-9]+$/ && $0 >= -40000 && $0 <= 150000 { printf "%.1f°C", $0 / 1000; exit }' "$1" 2>/dev/null
+}
+
+out=""
+temperature="$(fmt_c "$THERMAL_PATH/thermal_zone0/temp")"
+[ -n "$temperature" ] && out="CPU: $temperature"
+
+# Follow each port's PHY, rather than depending on changing hwmon numbers.
+for port in lan1 lan2; do
+	phy="$(readlink -f "$NET_PATH/$port/phydev" 2>/dev/null)"
+	[ -n "$phy" ] || continue
+	for path in "$phy"/hwmon/hwmon*/temp1_input; do
+		temperature="$(fmt_c "$path")"
+		[ -n "$temperature" ] || continue
+		label="$(printf '%s' "$port" | tr 'a-z' 'A-Z')"
+		out="${out:+$out }$label: $temperature"
+		break
+	done
+done
+
+wifi_temp=""
+for path in "$IEEE_PATH"/phy*/hwmon*/temp1_input \
+            "$IEEE_PATH"/phy*/device/hwmon/hwmon*/temp1_input; do
+	[ -r "$path" ] || continue
+	temperature="$(fmt_c "$path")"
+	[ -n "$temperature" ] && wifi_temp="${wifi_temp:+$wifi_temp }$temperature"
+done
+[ -n "$wifi_temp" ] && out="${out:+$out, }WiFi: $wifi_temp"
+
+[ -n "$out" ] || out="No temperature info"
+printf '%s' "$out"

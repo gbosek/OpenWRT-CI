@@ -1,0 +1,29 @@
+[package]
+name = "mwan4"
+version = "1.0.0"
+edition = "2024"
+# edition 2024 需要 rustc >= 1.85；明确宣告让旧工具链（例如 OpenWrt SDK 内建的
+# rustc）在建置阶段就报错，而不是吐出难以理解的语法错误。
+rust-version = "1.85"
+# 与 openwrt/luci-app-mwan4/Makefile 的 PKG_LICENSE 保持一致
+license = "MIT"
+authors = ["MWAN4 Team"]
+description = "Ultra-lightweight, high-performance Multi-WAN failover & health monitor daemon for Linux / OpenWrt"
+repository = "https://github.com/mwan4/mwan4"
+
+[dependencies]
+tokio = { version = "1.40", default-features = false, features = ["rt", "net", "time", "macros", "signal", "sync"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+libc = "0.2"
+log = "0.4"
+env_logger = { version = "0.11", default-features = false }
+socket2 = { version = "0.6", features = ["all"] }
+futures-util = { version = "0.3", default-features = false, features = ["alloc"] }
+
+[profile.release]
+opt-level = "s"        # 针对体积最佳化，但不像 "z" 那样牺牲热路径效能
+lto = true             # Link-Time Optimization
+codegen-units = 1      # Maximize size reduction and optimization
+panic = "abort"        # Remove unwinding tables
+strip = true           # Automatically strip symbols from binary
