@@ -196,6 +196,15 @@ jobs:
 
           make defconfig -j$(nproc) && make clean -j$(nproc)
 
+          if [[ "$WRT_CONFIG" == "AIROHA" ]]; then
+            for package in mwan4 luci-app-mwan4 luci-i18n-mwan4-zh-cn ttyd luci-app-ttyd luci-i18n-ttyd-zh-cn xg2010g-rps luci-app-pon-status luci-app-airoha-npu; do
+              grep -qx "CONFIG_PACKAGE_${package}=y" .config || {
+                echo "::error::Required package was dropped by defconfig: $package"
+                exit 1
+              }
+            done
+          fi
+
       - name: Download Packages
         if: ${{ !inputs.WRT_TEST }}
         run: |
@@ -235,6 +244,20 @@ jobs:
       - name: Package Firmware
         run: |
           cd ./wrt/ && mkdir ./upload/
+
+          if [[ "$WRT_CONFIG" == "AIROHA" && "$WRT_TEST" != 'true' ]]; then
+            manifest=./bin/targets/airoha/an7581/immortalwrt-airoha-an7581.manifest
+            if [[ ! -f "$manifest" ]]; then
+              manifest=$(find ./bin/targets/airoha/an7581 -maxdepth 1 -name '*.manifest' -print -quit)
+            fi
+            [[ -n "$manifest" && -f "$manifest" ]] || { echo '::error::Firmware manifest missing'; exit 1; }
+            for package in mwan4 luci-app-mwan4 luci-i18n-mwan4-zh-cn ttyd luci-app-ttyd luci-i18n-ttyd-zh-cn xg2010g-rps luci-app-pon-status luci-app-airoha-npu; do
+              grep -q "^${package} - " "$manifest" || {
+                echo "::error::Required package missing from firmware: $package"
+                exit 1
+              }
+            done
+          fi
 
           cp -f ./.config ./upload/Config-"$WRT_CONFIG"-"$WRT_INFO"-"$WRT_BRANCH"-"$WRT_DATE".txt
 

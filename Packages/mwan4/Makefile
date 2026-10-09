@@ -17,7 +17,7 @@ define Package/mwan4
   CATEGORY:=Network
   TITLE:=MWAN4 Rust ECMP multi-WAN manager
   URL:=https://github.com/gbosek/claus778-mwan4
-  DEPENDS:=@aarch64 @RUST_ARCH_DEPENDS +libc +ip-full
+  DEPENDS:=@aarch64 $(RUST_ARCH_DEPENDS) +libc +ip-full
   CONFLICTS:=mwan3
 endef
 

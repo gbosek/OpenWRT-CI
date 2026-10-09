@@ -19,7 +19,15 @@
 - 云编译包装改用 OpenWrt 的 rust-package.mk，以目标工具链编译并保留 Cargo.lock，避免依赖本机预装 Cargo 和离线缓存。
 - 保留内核 CONFIG_IP_ROUTE_MULTIPATH 支持 ECMP；PPE/NPU 驱动仍使用本次 ImmortalWrt 基线。
 
-本次仅完成源码与构建流程集成，尚未在新基线上编译、刷机或验证双 WAN 硬件卸载。
+首次云编译成功，但产物清单缺少 MWAN4；该产物不能作为插件齐全版。
+尚未在新基线上刷机或验证双 WAN 硬件卸载。
+
+## MWAN4 漏包修正和终端补齐
+
+- 修正 mwan4 的 Rust 架构依赖：使用 `$(RUST_ARCH_DEPENDS)`，不再依赖不存在的 `RUST_ARCH_DEPENDS` Kconfig 选项。
+- 加入 ttyd、luci-app-ttyd 和中文包。
+- MWAN4 r13 已有 IPv4 源/目标 CIDR 策略路由和中文管理页面；按用户要求不另加 pbr/luci-app-pbr。这不表示它包含 pbr 的域名分流等全部功能。
+- defconfig 后检查必需包全部为 y，发布前检查固件 manifest；缺包则失败，阻止发布不完整固件。
 
 ## RPS 持久化
 
