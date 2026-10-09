@@ -197,6 +197,11 @@ jobs:
           make defconfig -j$(nproc) && make clean -j$(nproc)
 
           if [[ "$WRT_CONFIG" == "AIROHA" ]]; then
+            selected_devices=$(grep -E '^CONFIG_TARGET_DEVICE_airoha_an7581_DEVICE_.+=y$' .config || true)
+            if [[ "$selected_devices" != 'CONFIG_TARGET_DEVICE_airoha_an7581_DEVICE_gemtek_xg2010g=y' ]] || grep -qx 'CONFIG_TARGET_ALL_PROFILES=y' .config; then
+              echo '::error::This branch must build only Gemtek XG2010G'
+              exit 1
+            fi
             for package in mwan4 luci-app-mwan4 luci-i18n-mwan4-zh-cn ttyd luci-app-ttyd luci-i18n-ttyd-zh-cn xg2010g-rps luci-app-pon-status luci-app-airoha-npu; do
               grep -qx "CONFIG_PACKAGE_${package}=y" .config || {
                 echo "::error::Required package was dropped by defconfig: $package"
@@ -285,11 +290,9 @@ jobs:
           tag_name: ${{env.WRT_CONFIG}}-${{env.WRT_INFO}}-${{env.WRT_BRANCH}}-${{env.WRT_DATE}}
           files: ./wrt/upload/*.*
           body: |
-            这是个平台固件包，内含多个设备！
-            请注意选择你需要的设备固件！
-            不要问，刷就完事了！
-
-            全系带开源硬件加速，别问了！
+            XG2010G 专用分支：仅编译 Gemtek XG2010G。
+            包含 MWAN4/中文界面、ttyd/中文界面、RPS 持久化和定制状态页。
+            硬件卸载和双 WAN 功能仍需刷入后实机确认。
 
             源码：${{env.WRT_REPO}}
             分支：${{env.WRT_BRANCH}}

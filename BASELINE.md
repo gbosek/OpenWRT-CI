@@ -1,5 +1,15 @@
 # XG2010G 编译基线
 
+## 专用分支使用方法
+
+GitHub 分支：`xg2010g`。Actions → OWRT-ALL → Run workflow，
+将 Branch 选为 `xg2010g`，TEST 不勾选，即编译完整固件。
+只启用 `gemtek_xg2010g` 设备；defconfig 后检查设备列表仅有此设备，禁止 ALL_PROFILES。
+本分支已保存 MWAN4 r13 及中文 LuCI、ttyd 及中文 LuCI、RPS、Airoha 状态页、
+温度/CPU 使用率和 Aurora 全宽 PON 卡片配置。HomeProxy/NAS 保持禁用。
+MWAN4 的 IPv4 地址策略路由替代本次需求中的独立 PBR 包。
+此前 main 分支的编译继续运行；新分支用于以后的 XG2010G 单型号构建。
+
 - 上游版本：[AIROHA-VIKINGYFY-owrt-26.10.08-11.11.17](https://github.com/VIKINGYFY/OpenWRT-CI/releases/tag/AIROHA-VIKINGYFY-owrt-26.10.08-11.11.17)
 - 源码仓库：VIKINGYFY/immortalwrt，分支 owrt。
 - 源码提交：`a38520034ee4bdd25dd6e88c4c59261f289ee17e`，由 OWRT-ALL 的 WRT_REVISION 固定。

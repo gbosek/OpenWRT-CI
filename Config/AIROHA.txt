@@ -1,5 +1,6 @@
 #设备平台
 CONFIG_TARGET_airoha=y
 CONFIG_TARGET_airoha_an7581=y
-#设备列表
-CONFIG_TARGET_ALL_PROFILES=y
+#仅编译 Gemtek XG2010G，保留多配置模式但只选一个设备。
+# CONFIG_TARGET_ALL_PROFILES is not set
+CONFIG_TARGET_DEVICE_airoha_an7581_DEVICE_gemtek_xg2010g=y
