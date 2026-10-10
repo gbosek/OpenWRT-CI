@@ -1,0 +1,17 @@
+{
+  "variant": "XG2010G-MOSSDEF-BRAULIOBO",
+  "backend": {
+    "upstream": "mossdef-org/mwan4",
+    "upstream_commit": "28b384183bdf7ab43bef52d3d8ae648ba2565610",
+    "fork": "gbosek/mwan4",
+    "branch": "xg2010g-compat",
+    "fork_commit": "9c04cb435bf39ca050ac60043575dbe8e6b54cef"
+  },
+  "frontend": {
+    "upstream": "brauliobo/luci-app-mwan4",
+    "upstream_commit": "4412343c4484477c98991d7c29df94289cd306af",
+    "fork": "gbosek/luci-app-mwan4",
+    "branch": "xg2010g-compat",
+    "fork_commit": "5c794bb0ff105cd8b24301470be00b9a5af0507d"
+  }
+}

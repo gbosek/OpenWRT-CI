@@ -226,3 +226,300 @@ msgstr "合计速率"
 
 msgid "RTT Trend"
 msgstr "RTT 趋势"
+
+msgid "PBR Integration"
+msgstr "PBR 集成"
+
+msgid "Standalone PBR (default)"
+msgstr "独立 PBR（默认）"
+
+msgid "PBR strategy targets (IPv4)"
+msgstr "PBR 策略组目标（IPv4）"
+
+msgid "Optional. Strategy targets require mwan4-pbr-compat and PBR 1.2.3 with IPv6 policies disabled. Configure domain, port and device matches in PBR."
+msgstr "可选功能。策略组目标需要 mwan4-pbr-compat 和 PBR 1.2.3，并关闭 PBR 的 IPv6 策略。在 PBR 中配置域名、端口及设备匹配条件。"
+
+msgid "MultiWAN 4"
+msgstr "MWAN4 多线路管理"
+
+msgid "Overview"
+msgstr "概览"
+
+msgid "WAN Links"
+msgstr "WAN 线路"
+
+msgid "Paths"
+msgstr "路由路径"
+
+msgid "Strategies"
+msgstr "分流策略"
+
+msgid "Rules"
+msgstr "规则"
+
+msgid "Globals"
+msgstr "全局设置"
+
+msgid "WAN workspace"
+msgstr "WAN 线路概览"
+
+msgid "WAN health matrix"
+msgstr "WAN 健康状态"
+
+msgid "Probe / SLA"
+msgstr "探测 / 质量门槛"
+
+msgid "Health tuning"
+msgstr "健康检测设置"
+
+msgid "Refresh runtime"
+msgstr "刷新运行状态"
+
+msgid "Service"
+msgstr "服务"
+
+msgid "Start"
+msgstr "启动"
+
+msgid "Stop"
+msgstr "停止"
+
+msgid "Not running"
+msgstr "未运行"
+
+msgid "Trackers"
+msgstr "健康检测进程"
+
+msgid "WAN links"
+msgstr "WAN 线路"
+
+msgid "Read-only runtime summary. Configuration and diagnostics links are shown only when this session has the matching ACL."
+msgstr "只读运行状态。配置入口根据当前会话权限显示。"
+
+msgid "Open network overview"
+msgstr "打开网络概览"
+
+msgid "Configured interfaces reported by mwan4 status"
+msgstr "MWAN4 状态报告的已配置接口"
+
+msgid "Runtime state reported by the backend"
+msgstr "后端报告的实际运行状态"
+
+msgid "Health-check tracker processes"
+msgstr "健康检测进程数量"
+
+msgid "Enabled"
+msgstr "已启用"
+
+msgid "Disabled"
+msgstr "已禁用"
+
+msgid "Up"
+msgstr "加入分流"
+
+msgid "Down"
+msgstr "退出分流"
+
+msgid "Edit"
+msgstr "编辑"
+
+msgid "Apply"
+msgstr "应用"
+
+msgid "Save"
+msgstr "保存"
+
+msgid "Cancel"
+msgstr "取消"
+
+msgid "Delete"
+msgstr "删除"
+
+msgid "Add"
+msgstr "添加"
+
+msgid "Name"
+msgstr "名称"
+
+msgid "Interface"
+msgstr "接口"
+
+msgid "Weight"
+msgstr "权重"
+
+msgid "Metric"
+msgstr "优先级"
+
+msgid "Protocol"
+msgstr "协议"
+
+msgid "Source address"
+msgstr "源地址"
+
+msgid "Destination address"
+msgstr "目标地址"
+
+msgid "Source port"
+msgstr "源端口"
+
+msgid "Destination port"
+msgstr "目标端口"
+
+msgid "Tracking method"
+msgstr "检测方式"
+
+msgid "Tracking IP"
+msgstr "检测目标 IP"
+
+msgid "Not available"
+msgstr "暂无数据"
+
+msgid "Not measured"
+msgstr "未测量"
+
+msgid "unknown"
+msgstr "未知"
+
+msgid "online"
+msgstr "在线"
+
+msgid "offline"
+msgstr "离线"
+
+msgid "Network interface"
+msgstr "网络接口"
+
+msgid "Address family"
+msgstr "地址族"
+
+msgid "IPv4"
+msgstr "IPv4"
+
+msgid "IPv6"
+msgstr "IPv6"
+
+msgid "Load balancing"
+msgstr "负载均衡"
+
+msgid "Failover"
+msgstr "故障切换"
+
+msgid "Health check method"
+msgstr "健康检测方式"
+
+msgid "ICMP ping"
+msgstr "ICMP Ping"
+
+msgid "Default policy"
+msgstr "默认策略"
+
+msgid "Restart mwan4"
+msgstr "重启 MWAN4"
+
+msgid "Ready"
+msgstr "就绪"
+
+msgid "Degraded"
+msgstr "部分线路异常"
+
+msgid "Setup needed"
+msgstr "需要配置"
+
+msgid "Policy running"
+msgstr "策略运行中"
+
+msgid "Monitor and refine"
+msgstr "监控与调整"
+
+msgid "Monitor WAN workspace"
+msgstr "查看 WAN 线路"
+
+msgid "Link risk detected"
+msgstr "检测到线路风险"
+
+msgid "Review WAN links"
+msgstr "检查 WAN 线路"
+
+msgid "Routing mode"
+msgstr "分流模式"
+
+msgid "Add WAN link"
+msgstr "添加 WAN 线路"
+
+msgid "Add rule"
+msgstr "添加规则"
+
+msgid "Routing"
+msgstr "路由设置"
+
+msgid "Traffic rules"
+msgstr "流量规则"
+
+msgid "Enabled links"
+msgstr "已启用线路"
+
+msgid "Traffic exceptions"
+msgstr "流量例外规则"
+
+msgid "No WAN links configured"
+msgstr "尚未配置 WAN 线路"
+
+msgid "Add first WAN link"
+msgstr "添加首条 WAN 线路"
+
+msgid "All WAN links disabled"
+msgstr "全部 WAN 线路已禁用"
+
+msgid "Enable a WAN link"
+msgstr "启用一条 WAN 线路"
+
+msgid "No usable path"
+msgstr "没有可用路径"
+
+msgid "No failover yet"
+msgstr "尚无故障切换"
+
+msgid "Configure failover"
+msgstr "配置故障切换"
+
+msgid "Restart the service from LuCI, then re-check health and diagnostics."
+msgstr "在 LuCI 重启服务后检查线路健康状态。"
+
+msgid "MultiWAN 4 settings applied and service restarted."
+msgstr "MWAN4 设置已应用，服务已重启。"
+
+msgid "Availability-only health checks; latency/loss SLA is not enforced."
+msgstr "仅检测可用性，未启用延迟或丢包门槛。"
+
+msgid "SLA: availability only"
+msgstr "质量门槛：仅检测可用性"
+
+msgid "Health check"
+msgstr "健康检测"
+
+msgid "Probe targets"
+msgstr "探测目标"
+
+msgid "Sticky"
+msgstr "保持会话出口"
+
+msgid "Last resort"
+msgstr "最后回退策略"
+
+msgid "Reliability"
+msgstr "可靠性"
+
+msgid "Interval"
+msgstr "间隔"
+
+msgid "Timeout"
+msgstr "超时"
+
+msgid "Count"
+msgstr "次数"
+
+msgid "Tracking IP addresses"
+msgstr "检测目标地址"
+
+msgid "Firewall mark mask"
+msgstr "防火墙标记掩码"

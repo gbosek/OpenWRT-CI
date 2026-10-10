@@ -1,3 +1,7 @@
+# XG2010G-MOSSDEF-BRAULIOBO variant
+
+本分支 MWAN4 来源及兼容性说明以 MWAN4-SOURCE.json 和 Packages/mwan4/XG2010G-COMPAT.md 为准。旧 Rust MWAN4 的描述属于历史版本，不适用于本分支。仅构建 XG2010G；保留原界面、RPS、终端和固定主源码。切换实现需要重新设置 MWAN4。
+
 # XG2010G 编译基线
 
 ## 专用分支使用方法

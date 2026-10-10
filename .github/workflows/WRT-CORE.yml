@@ -107,7 +107,7 @@ jobs:
           WRT_WIFI=$(grep -oE 'WIFI-(YES|NO)$' <<< "${WRT_CONFIG^^}" || true); WRT_WIFI=${WRT_WIFI:-none}
 
           {
-            echo "WRT_INFO=${WRT_SOURCE%%/*}"
+            echo "WRT_INFO=${WRT_SOURCE%%/*}-MOSSDEF-MWAN4"
             echo "WRT_MARK=${GITHUB_REPOSITORY%%/*}"
             echo "WRT_DATE=$(TZ=UTC-8 date +"%y.%m.%d-%H.%M.%S")"
             echo "WRT_CACHE_PREFIX=$WRT_CACHE_PREFIX"
@@ -264,6 +264,7 @@ jobs:
             done
           fi
 
+          cp "$GITHUB_WORKSPACE/MWAN4-SOURCE.json" ./upload/MWAN4-SOURCE.json
           cp -f ./.config ./upload/Config-"$WRT_CONFIG"-"$WRT_INFO"-"$WRT_BRANCH"-"$WRT_DATE".txt
 
           if [[ "$WRT_TEST" != 'true' ]]; then
@@ -290,7 +291,11 @@ jobs:
           tag_name: ${{env.WRT_CONFIG}}-${{env.WRT_INFO}}-${{env.WRT_BRANCH}}-${{env.WRT_DATE}}
           files: ./wrt/upload/*.*
           body: |
-            XG2010G 专用分支：仅编译 Gemtek XG2010G。
+            XG2010G-MOSSDEF 专用分支：仅编译 Gemtek XG2010G。
+            MWAN4 后端：mossdef-org/mwan4（gbosek/mwan4 的 xg2010g-compat 分支）。
+            LuCI 前端：brauliobo/luci-app-mwan4（gbosek/luci-app-mwan4 的 xg2010g-compat 分支）。
+            本版不使用 claus778-mwan4。接口兼容改动和准确提交见 MWAN4-SOURCE.json。
+            切换实现后需在 LuCI 重新设置 WAN/权重/策略；不兼容旧配置会另行备份。
             包含 MWAN4/中文界面、ttyd/中文界面、RPS 持久化和定制状态页。
             硬件卸载和双 WAN 功能仍需刷入后实机确认。
 

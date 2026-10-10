@@ -1,4 +1,4 @@
-# XG2010G status and today's locked Rust MWAN4 implementation.
+# XG2010G: mossdef-org/mwan4 + brauliobo/luci-app-mwan4, compatibility forks.
 CONFIG_FEED_pon_userspace=y
 CONFIG_PACKAGE_luci-app-pon-status=y
 CONFIG_PACKAGE_luci-app-airoha-npu=y
