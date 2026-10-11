@@ -5,7 +5,7 @@
     "upstream_commit": "28b384183bdf7ab43bef52d3d8ae648ba2565610",
     "fork": "gbosek/mwan4",
     "branch": "xg2010g-compat",
-    "fork_commit": "8d1aff08be94a03ea8a00e2ab949002667dc1556"
+    "fork_commit": "3d3b8a0fb409454abbb76bd198ec002e55afa067"
   },
   "frontend": {
     "upstream": "brauliobo/luci-app-mwan4",

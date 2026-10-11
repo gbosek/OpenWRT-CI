@@ -1,7 +1,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=xg2010g-rps
-PKG_VERSION:=20261009
+PKG_VERSION:=20261011
 PKG_RELEASE:=1
 PKG_LICENSE:=MIT
 
@@ -18,8 +18,10 @@ define Build/Compile
 endef
 
 define Package/xg2010g-rps/install
-	$(INSTALL_DIR) $(1)/usr/bin $(1)/usr/libexec/platform $(1)/etc/uci-defaults
+	$(INSTALL_DIR) $(1)/usr/bin $(1)/usr/libexec/platform $(1)/etc/uci-defaults $(1)/etc/hotplug.d/iface
 	$(INSTALL_BIN) ./files/rps-tune.sh $(1)/usr/bin/rps-tune.sh
+	$(INSTALL_BIN) ./files/rps-guard.sh $(1)/usr/bin/rps-guard.sh
+	$(INSTALL_BIN) ./files/99-rps-guard $(1)/etc/hotplug.d/iface/99-rps-guard
 	$(INSTALL_BIN) ./files/packet-steering.sh $(1)/usr/libexec/platform/packet-steering.sh
 	$(INSTALL_BIN) ./files/99-xg2010g-rps $(1)/etc/uci-defaults/99-xg2010g-rps
 endef
