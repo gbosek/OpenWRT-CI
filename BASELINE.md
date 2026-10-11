@@ -26,7 +26,7 @@ MWAN4 的 IPv4 地址策略路由替代本次需求中的独立 PBR 包。
 ## 2026-10-09 状态页和 MWAN4 集成
 
 - 概览温度：CPU、PON、LAN1、LAN2；使用 thermal、PHY hwmon 和 ponctl 的实际读数，缺失项不编造数值。
-- CPU 使用率：两次 /proc/stat 差值，500 ms 采样窗口。
+- CPU 使用率：分别采样 cpu0–cpu3 两次 /proc/stat 差值，500 ms 窗口后显示四核中占用最高的单核值。
 - PON 卡片：单列全宽布局，适配 Aurora；上行取 TX、下行取 RX，字节差值除以 1048576 和实际秒数，单位 MiB/s。
 - Airoha LuCI：`naoki66/luci-app-airoha` 的 `luci-app-airoha-npu`，提交 `b87d08f8a0140ae98d25ec95350773b7baa7edbb`，包含今天本地固件中的 PON 速率与中文修改。未引入该 feed 中的 factory/recovery/mesh/netmode/fancontrol 页面。
 - MWAN4：`gbosek/claus778-mwan4` 提交 `57dd176701c21e7dbf6206aec2152a4321212c70`，1.0.0-r13，及其 LuCI/中文包；源码随仓库保存。沿用今天版本的默认禁用状态，不预设拨号账号或出口。

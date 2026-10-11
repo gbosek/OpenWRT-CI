@@ -14,29 +14,45 @@ backend = root / 'feeds/luci/modules/luci-base/root/usr/share/rpcd/ucode/luci'
 text = backend.read_text()
 start = text.index('\tgetCPUUsage: {')
 end = text.index('\n\tget', start + 1)
-text = text[:start] + '''\tgetCPUUsage: {
-\t\tcall: function() {
-\t\t\tconst sample = function() {
-\t\t\t\tconst fh = open('/proc/stat', 'r');
-\t\t\t\tif (!fh) return null;
-\t\t\t\tconst line = fh.read('line');
-\t\t\t\tfh.close();
-\t\t\t\tconst m = match(line, /^cpu\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)(\\s+(\\d+))?/);
-\t\t\t\tif (!m) return null;
-\t\t\t\t// Guest time is already included in user/nice; do not count it twice.
-\t\t\t\tconst busy = +m[1] + +m[2] + +m[3] + +m[6] + +m[7] + +(m[9] || 0);
-\t\t\t\treturn { total: busy + +m[4] + +m[5], busy: busy };
-\t\t\t};
-\t\t\tconst a = sample();
-\t\t\tsleep(500);
-\t\t\tconst b = sample();
-\t\t\tif (!a || !b || b.total <= a.total || b.busy < a.busy)
-\t\t\t\treturn { cpuusage: '?' };
-\t\t\tconst value = max(0, min(100, 100.0 * (b.busy - a.busy) / (b.total - a.total)));
-\t\t\treturn { cpuusage: sprintf('%.1f%%', value) };
-\t\t}
-\t},
-''' + text[end:]
+text = text[:start] + '''	getCPUUsage: {
+		call: function() {
+			const sample = function() {
+				const fh = open('/proc/stat', 'r');
+				if (!fh) return null;
+				const cpus = {};
+				let line;
+				while ((line = fh.read('line')) != null) {
+					const m = match(line, /^(cpu[0-3])\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)(\\s+(\\d+))?/);
+					if (!m) continue;
+					// Guest time is already included in user/nice; do not count it twice.
+					const busy = +m[2] + +m[3] + +m[4] + +m[7] + +m[8] + +(m[10] || 0);
+					cpus[m[1]] = { total: busy + +m[5] + +m[6], busy: busy };
+				}
+				fh.close();
+				return cpus;
+			};
+			const a = sample();
+			sleep(500);
+			const b = sample();
+			if (!a || !b)
+				return { cpuusage: '?' };
+
+			// Report the busiest individual core, not an aggregate across cores.
+			let maxUsage = 0;
+			for (let i = 0; i < 4; i++) {
+				const name = 'cpu' + i;
+				if (!a[name] || !b[name] || b[name].total <= a[name].total || b[name].busy < a[name].busy)
+					return { cpuusage: '?' };
+
+				const total = b[name].total - a[name].total;
+				const busy = b[name].busy - a[name].busy;
+				const usage = max(0, min(100, 100.0 * busy / total));
+				maxUsage = max(maxUsage, usage);
+			}
+
+			return { cpuusage: sprintf('%.1f%%', maxUsage) };
+		}
+	},''' + text[end:]
 backend.write_text(text)
 
 page = root / 'feeds/luci/modules/luci-mod-status/htdocs/luci-static/resources/view/status/include/10_system.js'
