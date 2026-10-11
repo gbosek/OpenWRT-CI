@@ -523,3 +523,6 @@ msgstr "检测目标地址"
 
 msgid "Firewall mark mask"
 msgstr "防火墙标记掩码"
+
+msgid "Failed targets: %s / %d"
+msgstr "失败目标：%s / %d"

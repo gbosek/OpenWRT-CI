@@ -1582,7 +1582,7 @@ function renderWanRow(section, status) {
 	let method = runtime.track_method || section.track_method || 'ping';
 	let state = runtime.health_state || runtime.status || (runtime.up ? 'online' : enabled ? 'unknown' : 'disabled');
 	let score = metricText(runtime.score_percent, '%');
-	let failed = runtime.failed_checks == null ? _('Not measured') : String(runtime.failed_checks);
+	let failed = runtime.failed_targets == null ? '-' : String(runtime.failed_targets);
 	let quality = section.check_quality == '1';
 	let sla = quality
 		? _('fail %sms/%s%%, recover %sms/%s%%').format(section.failure_latency || '1000', section.failure_loss || '40', section.recovery_latency || '500', section.recovery_loss || '10')
@@ -1603,7 +1603,7 @@ function renderWanRow(section, status) {
 		E('td', [
 			E('strong', [ score ]),
 			E('small', [ runtime.score_current == null ? _('unmeasured') : _('%s/%s score').format(runtime.score_current, runtime.score_max || '10') ]),
-			E('small', [ _('%s failed, %d target(s)').format(failed, Number(runtime.failed_targets || 0)) ])
+			E('small', [ _('Failed targets: %s / %d').format(failed, targetRows(section, runtime).length) ])
 		]),
 		E('td', [
 			E('strong', [ method ]),
