@@ -30,6 +30,11 @@ function read_optional_int(path) {
     return value == null ? null : int(value);
 }
 
+function elapsed_since(uptime, path) {
+	let timestamp = read_optional_int(path);
+	return timestamp == null ? null : uptime - timestamp;
+}
+
 function interfaces_status(request) {
 	let uptime = m.get_uptime();
 	let procd = m.ubus_call('service', 'list', { 'name': 'mwan4' })?.mwan4?.instances;
@@ -97,9 +102,9 @@ function interfaces_status(request) {
             score_percent: score != null && score_max > 0 ? score * 100.0 / score_max : null,
             failed_targets: length(filter(track_ips, target => target.status != 'unknown'))
                 ? length(filter(track_ips, target => target.status == 'down')) : null,
-			'age': uptime - read_optional_int(sprintf('%s/%s/TIME', m.pkg.TRACK_STATUS_DIR, primary_si)),
-			'online': uptime - read_optional_int(sprintf('%s/%s/ONLINE', m.pkg.TRACK_STATUS_DIR, primary_si)),
-			'offline': uptime - read_optional_int(sprintf('%s/%s/OFFLINE', m.pkg.TRACK_STATUS_DIR, primary_si)),
+			'age': elapsed_since(uptime, sprintf('%s/%s/TIME', m.pkg.TRACK_STATUS_DIR, primary_si)),
+			'online': elapsed_since(uptime, sprintf('%s/%s/ONLINE', m.pkg.TRACK_STATUS_DIR, primary_si)),
+			'offline': elapsed_since(uptime, sprintf('%s/%s/OFFLINE', m.pkg.TRACK_STATUS_DIR, primary_si)),
 			'uptime': netstatus?.uptime || 0,
 			'score': read_optional_int(sprintf('%s/%s/SCORE', m.pkg.TRACK_STATUS_DIR, primary_si)),
 			'lost': read_optional_int(sprintf('%s/%s/LOST', m.pkg.TRACK_STATUS_DIR, primary_si)),
@@ -115,7 +120,7 @@ function interfaces_status(request) {
 	return interfaces;
 }
 
-// XG2010G compatibility: report real procd state; no invented advanced API.
+// Report the running service and tracker instances from procd.
 function runtime_summary() {
     let instances = m.ubus_call('service', 'list', { name: 'mwan4' })?.mwan4?.instances || {};
     let running = 0, expected = 0, service_running = false;

@@ -1,528 +1,3560 @@
 msgid ""
-msgstr "Content-Type: text/plain; charset=UTF-8\n"
-"Project-Id-Version: luci-app-mwan4 1.0.0\n"
-"Language-Team: Simplified Chinese\n"
-"Language: zh_Hans\n"
-"MIME-Version: 1.0\n"
-"Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
-msgid "MWAN4 Load Balancing"
-msgstr "MWAN4 多路分流"
-msgid "Basic"
-msgstr "基础"
-msgid "Advanced"
-msgstr "高级"
-msgid "Unknown"
-msgstr "未知"
-msgid "Running"
-msgstr "运行中"
-msgid "Stopped"
-msgstr "已停止"
-msgid "MWAN4 Multi-WAN Failover & Health Monitor"
-msgstr "MWAN4 多路故障转移与健康监控"
-msgid "Daemon:"
-msgstr "守护进程:"
-msgid "Kernel Default Route:"
-msgstr "内核默认路由:"
-msgid "No metrics available. Check that the MWAN4 service is running."
-msgstr "未获取到运行指标，请确认 MWAN4 服务已启动。"
-msgid "Online (UP)"
-msgstr "在线 (UP)"
-msgid "Offline (DOWN)"
-msgstr "离线 (DOWN)"
-msgid "(No IP)"
-msgstr "(无IP)"
-msgid "Realtime RTT"
-msgstr "实时 RTT (延迟)"
-msgid "Jitter"
-msgstr "网络抖动 (Jitter)"
-msgid "Gateway"
-msgstr "网关地址 (Gateway)"
-msgid "ECMP Weight"
-msgstr "ECMP 权重 (Weight)"
-msgid "Sliding Window Packet Loss"
-msgstr "滑动窗口丢包率"
-msgid "Consecutive Successes: "
-msgstr "连续成功: "
-msgid "Consecutive Timeouts: "
-msgstr "连续超时: "
-msgid "MWAN4 Configuration"
-msgstr "MWAN4 参数配置"
-msgid "Multi-WAN interfaces and health probes via UCI. Save & Apply reloads the daemon."
-msgstr "通过 UCI 配置多出口网卡与健康探针，保存并应用后重载守护进程。"
-msgid "Global Settings"
-msgstr "全局运行参数"
-msgid "Enable MWAN4 Daemon"
-msgstr "启用 MWAN4 守护进程"
-msgid "Probe Interval (ms)"
-msgstr "探测间隔 (毫秒)"
-msgid "Probe interval per interface (default: 500 ms)"
-msgstr "每个网卡的探测间隔（默认 500 ms）"
-msgid "Probe Timeout (ms)"
-msgstr "单次探测超时 (毫秒)"
-msgid "Unanswered probe is considered lost after this duration (default: 400ms, must not exceed the probe interval)"
-msgstr "探测无响应超过此时间判定为丢包（默认 400ms，不应大于探测周期）"
-msgid "Sliding Window Size"
-msgstr "滑动窗口长度"
-msgid "Number of probe samples to calculate loss rate and smoothed RTT (default: 10)"
-msgstr "用于计算丢包率与平滑 RTT 的样本数（默认 10）"
-msgid "Consecutive Failures for DOWN"
-msgstr "断线触发超时次数"
-msgid "Consecutive probe timeouts before interface is marked DOWN (default: 3)"
-msgstr "连续超时达到此数值直接判定线路为 DOWN（默认 3 次）"
-msgid "Recovery Success Count (Hysteresis)"
-msgstr "防震荡恢复次数 (Hysteresis)"
-msgid "Consecutive successful probes with <10% loss required before recovering to UP (default: 5)"
-msgstr "线路断开后需连续成功此数值且丢包<10%才恢复为 UP（默认 5 次）"
-msgid "Flush Conntrack on DOWN"
-msgstr "掉线自动清理 Conntrack"
-msgid "Flush TCP/UDP connections on an interface when it goes down."
-msgstr "网卡掉线时清理该链路上的 TCP/UDP 连接。"
-msgid "WAN Interfaces"
-msgstr "WAN 网卡接口列表"
-msgid "Gateway, ECMP weight and probe targets for each WAN interface."
-msgstr "每个出口网卡的网关、ECMP 权重与探测目标。"
-msgid "Enable"
-msgstr "启用"
-msgid "Interface Name"
-msgstr "网卡名称"
-msgid "Gateway IP"
-msgstr "网关 IP (Gateway)"
-msgid "Probe Targets (IP:Port)"
-msgstr "探测目标 (IP:Port)"
-msgid "MWAN4 configuration saved and applied."
-msgstr "MWAN4 配置已保存并重新载入。"
-msgid "Priority / Weight"
-msgstr "优先级 / 权重"
-msgid "Metric (Priority)"
-msgstr "跃点优先级 (Metric)"
-msgid "Lower = higher priority. Same metric = ECMP load balancing, different metrics = primary/backup failover."
-msgstr "数值越小优先级越高；metric 相同走 ECMP 负载均衡（多流分流），不同则走主备故障转移。"
-msgid "ECMP weight for interfaces with the same metric."
-msgstr "同一 metric 网卡之间的流量分配权重。"
-msgid "Multi-WAN Routing Mode"
-msgstr "多线路由模式 (ECMP)"
-msgid "standard keeps a single multipath route, so link changes rehash and may drop existing connections. resilient remaps only the failed links (Linux 5.14+)."
-msgstr "standard 只有一条 multipath 路由，链路变化会重新哈希、可能打断既有连接；resilient 只重映射故障链路（需 Linux 5.14+）。"
-msgid "Standard ECMP (multipath route)"
-msgstr "标准 ECMP（多路径路由）"
-msgid "Automatic (resilient when supported)"
-msgstr "自动（内核支持时使用弹性模式）"
-msgid "Resilient nexthop group (require kernel support)"
-msgstr "弹性 nexthop 组（需内核支持）"
-msgid "Throughput (TX / RX)"
-msgstr "实时吞吐 (发送 / 接收)"
-msgid " (inactive)"
-msgstr "（未生效）"
-msgid "Policy Routing:"
-msgstr "策略分流："
-msgid "Multipath Hash Policy"
-msgstr "多路径哈希策略"
-msgid "Kernel fib_multipath_hash_policy. l4 (default on most systems) also hashes ports and spreads flows most evenly; l3 hashes addresses only; inner also uses tunnel inner headers. Applied at daemon start."
-msgstr "内核 fib_multipath_hash_policy。l4（多数系统默认）同时哈希端口，分流最均匀；l3 只哈希地址；inner 还会使用隧道内层头。启动时写入。"
-msgid "L3 (addresses only)"
-msgstr "L3（仅地址）"
-msgid "L4 (addresses + ports, the default)"
-msgstr "L4（地址 + 端口，默认）"
-msgid "L3 + tunnel inner headers"
-msgstr "L3 + 隧道内层头"
-msgid "ECMP Weight Mode"
-msgstr "ECMP 权重模式"
-msgid "quality adjusts each active WAN weight from measured loss and RTT (rate-limited, may rehash flows); static keeps the configured weights."
-msgstr "quality 依据实测丢包与 RTT 动态调整各线路权重（有限速，可能触发重哈希）；static 使用配置的固定权重。"
-msgid "Static (configured weights)"
-msgstr "静态（使用配置权重）"
-msgid "Quality-aware (dynamic)"
-msgstr "质量感知（动态）"
-msgid "Dynamic Weight Update Interval (ms)"
-msgstr "动态权重更新间隔（毫秒）"
-msgid "Minimum interval between dynamic weight updates (default: 10000 ms). Each update re-installs the ECMP route."
-msgstr "两次动态权重更新之间的最小间隔（默认 10000 毫秒）。每次更新都会重新下发 ECMP 路由。"
-msgid "Load-aware Traffic Shifting"
-msgstr "负载感知流量转移"
-msgid "When a WAN utilisation (measured tx/rx against its max_mbps/up_mbps) exceeds the target ratio, lower its ECMP weight so part of the flows move to the idle WANs. Rate-limited by the update interval above; every interface then needs max_mbps."
-msgstr "当某条 WAN 的利用率（按实测 tx/rx 与该接口的 max_mbps/up_mbps 计算）超过目标比例时，下修其 ECMP 权重，把部分 flow 转移到空闲的 WAN。更新节流沿用上面的间隔；启用后每条 interface 都必须填 max_mbps。"
-msgid "Utilisation at or above which a WAN starts shedding weight (default: 0.80 = 80%). Must be greater than the recover ratio."
-msgstr "利用率达到或超过该值时，该 WAN 开始下修权重（默认 0.80 = 80%）。必须大于恢复阈值。"
-msgid "Utilisation at or below which a throttled WAN fully regains its configured weight (default: 0.60). The gap to the offload threshold is hysteresis against weight oscillation."
-msgstr "利用率降到该值及以下时，被下修的 WAN 完全恢复配置权重（默认 0.60）。与触发阈值之间的差值是避免权重来回震荡的迟滞。"
-msgid "Max Bandwidth (Mbps)"
-msgstr "最大带宽（Mbps）"
-msgid "Line capacity. When set on every interface, the ECMP weights become proportional to it (weight x max_mbps); it is also the LAN download capacity used by load-aware shifting. Required on every interface when Load-aware Traffic Shifting is enabled."
-msgstr "线路容量。所有 interface 都填写时，ECMP 权重自动按它成比例（weight × max_mbps）；同时也是负载感知使用的 LAN 下载方向容量。启用负载感知流量转移时每条 interface 必填。"
-msgid "Up Capacity (Mbps)"
-msgstr "上行容量（Mbps）"
-msgid "Upload (LAN upload) capacity for asymmetric lines. Leave empty to reuse the max bandwidth."
-msgstr "非对称线路的上传（LAN 上传）容量。留空则沿用最大带宽。"
-msgid "load shifting"
-msgstr "负载转移中"
-msgid "Policy Routing (Source / Destination)"
-msgstr "策略分流（来源 / 目的）"
-msgid "Send traffic matching a source (and optionally destination) prefix through a specific WAN using fib rules. Non-matching traffic keeps using ECMP. Rules are removed automatically while the target WAN is down, so traffic falls back to ECMP."
-msgstr "让匹配来源（可选目的）前缀的流量经 fib 规则走指定 WAN，未匹配流量仍走 ECMP。目标 WAN 下线时规则自动移除，流量回退 ECMP。"
-msgid "Rule Name"
-msgstr "规则名称"
-msgid "Unique name used in logs and status."
-msgstr "用于日志与状态显示的唯一名称。"
-msgid "Source Prefixes (CIDR)"
-msgstr "来源前缀 (CIDR)"
-msgid "IPv4 source prefixes, e.g. 192.168.3.0/24. Leave empty to match any source."
-msgstr "IPv4 来源前缀，例如 192.168.3.0/24。留空 = 匹配任意来源。"
-msgid "Destination Prefixes (CIDR)"
-msgstr "目的前缀 (CIDR)"
-msgid "Optional IPv4 destination prefixes. Leave empty to match any destination."
-msgstr "可选的 IPv4 目的前缀。留空 = 匹配任意目的。"
-msgid "Target WAN"
-msgstr "目标 WAN"
-msgid "Traffic matching this rule is routed through this WAN while it is healthy."
-msgstr "匹配此规则的流量在该 WAN 健康时经它转发。"
-msgid "Rule Priority"
-msgstr "规则优先级"
-msgid "Optional fib-rule priority (9000-9063); lower matches first. Either set it on every rule or on none."
-msgstr "可选的 fib 规则优先级（9000-9063），数值越小越先匹配。要么每条规则都设置，要么都不设置。"
-msgid "Degrade Loss Threshold"
-msgstr "降级丢包阈值"
-msgid "Flush Conntrack on Active Set Change"
-msgstr "成员变化时清理 conntrack"
-msgid "Last probe error: "
-msgstr "最近探测错误："
-msgid "Local problem (packets never left the device): "
-msgstr "本机问题（封包未发出网卡）："
-msgid "No status file"
-msgstr "无状态文件"
-msgid "No status file yet: the daemon has not written one (or it just started)."
-msgstr "尚无状态文件：守护进程尚未写入（或刚启动）。"
-msgid "Not trustworthy (clock skew)"
-msgstr "不可信（时钟偏差）"
-msgid "Online (UP, degraded - not carrying traffic)"
-msgstr "在线（UP，已降级——不承载流量）"
-msgid "Status File:"
-msgstr "状态文件："
-msgid "Status is stale: the daemon may have stopped. This is the last known state."
-msgstr "状态已过期：守护进程可能已停止，这是最后已知状态。"
-msgid "Stopped (status is stale)"
-msgstr "已停止（状态过期）"
-msgid "ago"
-msgstr "前"
-msgid "clock skew"
-msgstr "时钟偏差"
-msgid "missing"
-msgstr "缺失"
-msgid "Hash Granularity:"
-msgstr "哈希粒度："
-msgid "L3 only: one WAN per destination IP"
-msgstr "仅 L3：同一目的 IP 只走一条 WAN"
-msgid "l4: per-connection spreading"
-msgstr "l4：按连线分散"
-
-msgid "WAN Status:"
-msgstr "WAN 状态："
-
-msgid "Allow Dynamic Weights on Standard ECMP"
-msgstr "允许在 Standard ECMP 下使用动态权重"
-
-msgid "Aggregate"
-msgstr "合计速率"
-
-msgid "RTT Trend"
-msgstr "RTT 趋势"
-
-msgid "PBR Integration"
-msgstr "PBR 集成"
-
-msgid "Standalone PBR (default)"
-msgstr "独立 PBR（默认）"
-
-msgid "PBR strategy targets (IPv4)"
-msgstr "PBR 策略组目标（IPv4）"
-
-msgid "Optional. Strategy targets require mwan4-pbr-compat and PBR 1.2.3 with IPv6 policies disabled. Configure domain, port and device matches in PBR."
-msgstr "可选功能。策略组目标需要 mwan4-pbr-compat 和 PBR 1.2.3，并关闭 PBR 的 IPv6 策略。在 PBR 中配置域名、端口及设备匹配条件。"
-
-msgid "MultiWAN 4"
-msgstr "MWAN4 多线路管理"
-
-msgid "Overview"
-msgstr "概览"
-
-msgid "WAN Links"
-msgstr "WAN 线路"
-
-msgid "Paths"
-msgstr "路由路径"
-
-msgid "Strategies"
-msgstr "分流策略"
-
-msgid "Rules"
-msgstr "规则"
-
-msgid "Globals"
-msgstr "全局设置"
-
-msgid "WAN workspace"
-msgstr "WAN 线路概览"
-
-msgid "WAN health matrix"
-msgstr "WAN 健康状态"
-
-msgid "Probe / SLA"
-msgstr "探测 / 质量门槛"
-
-msgid "Health tuning"
-msgstr "健康检测设置"
-
-msgid "Refresh runtime"
-msgstr "刷新运行状态"
-
-msgid "Service"
-msgstr "服务"
-
-msgid "Start"
-msgstr "启动"
-
-msgid "Stop"
-msgstr "停止"
-
-msgid "Not running"
-msgstr "未运行"
-
-msgid "Trackers"
-msgstr "健康检测进程"
-
-msgid "WAN links"
-msgstr "WAN 线路"
-
-msgid "Read-only runtime summary. Configuration and diagnostics links are shown only when this session has the matching ACL."
-msgstr "只读运行状态。配置入口根据当前会话权限显示。"
-
-msgid "Open network overview"
-msgstr "打开网络概览"
-
-msgid "Configured interfaces reported by mwan4 status"
-msgstr "MWAN4 状态报告的已配置接口"
-
-msgid "Runtime state reported by the backend"
-msgstr "后端报告的实际运行状态"
-
-msgid "Health-check tracker processes"
-msgstr "健康检测进程数量"
-
-msgid "Enabled"
-msgstr "已启用"
-
-msgid "Disabled"
-msgstr "已禁用"
-
-msgid "Up"
-msgstr "加入分流"
-
-msgid "Down"
-msgstr "退出分流"
-
-msgid "Edit"
-msgstr "编辑"
-
-msgid "Apply"
-msgstr "应用"
-
-msgid "Save"
-msgstr "保存"
-
-msgid "Cancel"
-msgstr "取消"
-
-msgid "Delete"
-msgstr "删除"
-
-msgid "Add"
-msgstr "添加"
-
-msgid "Name"
-msgstr "名称"
-
-msgid "Interface"
-msgstr "接口"
-
-msgid "Weight"
-msgstr "权重"
-
-msgid "Metric"
-msgstr "优先级"
-
-msgid "Protocol"
-msgstr "协议"
-
-msgid "Source address"
-msgstr "源地址"
-
-msgid "Destination address"
-msgstr "目标地址"
-
-msgid "Source port"
-msgstr "源端口"
-
-msgid "Destination port"
-msgstr "目标端口"
-
-msgid "Tracking method"
-msgstr "检测方式"
-
-msgid "Tracking IP"
-msgstr "检测目标 IP"
-
-msgid "Not available"
-msgstr "暂无数据"
-
-msgid "Not measured"
-msgstr "未测量"
-
-msgid "unknown"
-msgstr "未知"
-
-msgid "online"
-msgstr "在线"
-
-msgid "offline"
-msgstr "离线"
-
-msgid "Network interface"
-msgstr "网络接口"
-
-msgid "Address family"
-msgstr "地址族"
-
-msgid "IPv4"
-msgstr "IPv4"
-
-msgid "IPv6"
-msgstr "IPv6"
-
-msgid "Load balancing"
-msgstr "负载均衡"
-
-msgid "Failover"
-msgstr "故障切换"
-
-msgid "Health check method"
-msgstr "健康检测方式"
-
-msgid "ICMP ping"
-msgstr "ICMP Ping"
-
-msgid "Default policy"
-msgstr "默认策略"
-
-msgid "Restart mwan4"
-msgstr "重启 MWAN4"
-
-msgid "Ready"
-msgstr "就绪"
-
-msgid "Degraded"
-msgstr "部分线路异常"
-
-msgid "Setup needed"
-msgstr "需要配置"
-
-msgid "Policy running"
-msgstr "策略运行中"
-
-msgid "Monitor and refine"
-msgstr "监控与调整"
-
-msgid "Monitor WAN workspace"
-msgstr "查看 WAN 线路"
-
-msgid "Link risk detected"
-msgstr "检测到线路风险"
-
-msgid "Review WAN links"
-msgstr "检查 WAN 线路"
-
-msgid "Routing mode"
-msgstr "分流模式"
+msgstr "Content-Type: text/plain; charset=UTF-8\nProject-Id-Version: luci-app-mwan4\nPO-Revision-Date: 2026-10-11 23:50+0800\nLast-Translator: gbosek\nLanguage-Team: Simplified Chinese\nLanguage: zh_Hans\nMIME-Version: 1.0\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=1; plural=0;\n"
+
+msgid " / netifd down"
+msgstr " / 网络接口未连接"
+
+msgid " / netifd up"
+msgstr " / 网络接口已连接"
+
+msgid "%d / %d"
+msgstr "%d / %d"
+
+msgid "%d bytes matched"
+msgstr "已匹配 %d 字节"
+
+msgid "%d configured"
+msgstr "已配置 %d 项"
+
+msgid "%d counter(s)"
+msgstr "%d 个计数器"
+
+msgid "%d enabled"
+msgstr "已启用 %d 条"
+
+msgid "%d endpoint(s)"
+msgstr "%d 个端点"
+
+msgid "%d modes"
+msgstr "%d 种模式"
+
+msgid "%d more counter(s) hidden; open Raw RPC response for the full list."
+msgstr "另有 %d 个计数器未显示；打开原始 RPC 响应查看完整列表。"
+
+msgid "%d ms"
+msgstr "%d 毫秒"
+
+msgid "%d of %d runtime WAN links are online."
+msgstr "运行中的 WAN 线路有 %d 条在线，共 %d 条。"
+
+msgid "%d packets / %d bytes"
+msgstr "%d 个数据包 / %d 字节"
+
+msgid "%d paths"
+msgstr "%d 条路径"
+
+msgid "%d rule reference(s)"
+msgstr "%d 个规则引用"
+
+msgid "%d strategies, %d paths"
+msgstr "%d 个策略，%d 条路径"
+
+msgid "%d total rules"
+msgstr "共 %d 条规则"
+
+msgid "%d validation check(s) need attention."
+msgstr "%d 项校验需要处理。"
+
+msgid "%d warning(s)"
+msgstr "%d 条警告"
+
+msgid "%d%%"
+msgstr "%d%%"
+
+msgid "%d%s"
+msgstr "%d%s"
+
+msgid "%d/%d online"
+msgstr "%d/%d 在线"
+
+msgid "%s (%s)"
+msgstr "%s（%s）"
+
+msgid "%s (custom)"
+msgstr "%s（自定义）"
+
+msgid "%s (helper missing)"
+msgstr "%s（缺少辅助程序）"
+
+msgid "%s -> %s; Routing mode: %s."
+msgstr "%s → %s；分流模式：%s。"
+
+msgid "%s failed, %d target(s)"
+msgstr "失败 %s 个，共 %d 个检测目标"
+
+msgid "%s ms / %s%%"
+msgstr "%s 毫秒 / %s%%"
+
+msgid "%s uses %s"
+msgstr "%s 使用 %s"
+
+msgid "%s/%s score"
+msgstr "健康评分 %s/%s"
+
+msgid "%s: %s"
+msgstr "%s：%s"
+
+msgid "%sms / %s%%"
+msgstr "%s 毫秒 / %s%%"
+
+msgid "+%d more"
+msgstr "另有 %d 项"
+
+msgid "1. Kernel"
+msgstr "1. 内核"
+
+msgid "1. Match traffic"
+msgstr "1. 匹配流量"
+
+msgid "1.1.1.1 8.8.8.8"
+msgstr "1.1.1.1 8.8.8.8"
+
+msgid "100 200 vpn"
+msgstr "100 200 vpn"
+
+msgid "2. Describe the destination"
+msgstr "2. 设置目标条件"
+
+msgid "2. Endpoint role"
+msgstr "2. 端点角色"
+
+msgid "3. Choose path"
+msgstr "3. 选择路径"
+
+msgid "3. Route alignment"
+msgstr "3. 路由对齐"
+
+msgid "443 or 1000-2000"
+msgstr "443 或 1000-2000"
+
+msgid "A WAN link with that name already exists."
+msgstr "已存在同名 WAN 线路。"
+
+msgid "A routing mode uses a saved mwan4 strategy. Use presets for common failover or load-balance behavior."
+msgstr "分流模式使用已保存的 mwan4 策略。常用的故障切换或负载均衡可通过预设配置。"
+
+msgid "A traffic exception with that name already exists."
+msgstr "已存在同名流量例外规则。"
+
+msgid "ARP nping probe"
+msgstr "ARP nping 探测"
+
+msgid "ARP probe"
+msgstr "ARP 探测"
+
+msgid "Accepted ADD_ADDR limit"
+msgstr "接受的 ADD_ADDR 地址上限"
+
+msgid "Action: %s"
+msgstr "操作：%s"
+
+msgid "Actions"
+msgstr "操作"
 
 msgid "Add WAN link"
 msgstr "添加 WAN 线路"
 
-msgid "Add rule"
-msgstr "添加规则"
+msgid "Add a WAN link"
+msgstr "添加 WAN 线路"
 
-msgid "Routing"
-msgstr "路由设置"
+msgid "Add all enabled mwan4 WAN links to supported_interface"
+msgstr "将全部已启用的 mwan4 WAN 线路加入 supported_interface"
 
-msgid "Traffic rules"
-msgstr "流量规则"
+msgid "Add each internet uplink once, then mwan4 can track health, SLA state, and strategy paths from one workspace."
+msgstr "为每条互联网出口添加一条线路，即可在此查看健康状态、质量门槛和策略路径。"
 
-msgid "Enabled links"
-msgstr "已启用线路"
+msgid "Add exception"
+msgstr "添加例外规则"
 
-msgid "Traffic exceptions"
-msgstr "流量例外规则"
-
-msgid "No WAN links configured"
-msgstr "尚未配置 WAN 线路"
+msgid "Add exceptions only if needed"
+msgstr "按需添加例外规则"
 
 msgid "Add first WAN link"
 msgstr "添加首条 WAN 线路"
 
+msgid "Add only the destination constraints you need. Empty fields keep the destination broad."
+msgstr "只填写需要的目标条件；留空表示不限制。"
+
+msgid "Add the first WAN link"
+msgstr "添加首条 WAN 线路"
+
+msgid "Add traffic exception"
+msgstr "添加流量例外规则"
+
+msgid "Additional routing tables"
+msgstr "附加路由表"
+
+msgid "Additional subflow limit"
+msgstr "附加子流上限"
+
+msgid "Additional tables"
+msgstr "附加路由表"
+
+msgid "Address"
+msgstr "地址"
+
+msgid "Address families"
+msgstr "地址协议族"
+
+msgid "Address family"
+msgstr "地址协议族"
+
+msgid "Advanced"
+msgstr "高级"
+
+msgid "Advanced WAN link integrations"
+msgstr "WAN 线路高级集成"
+
+msgid "Advanced options"
+msgstr "高级选项"
+
+msgid "Advanced probe helpers"
+msgstr "高级探测辅助程序"
+
+msgid "Advanced probe method"
+msgstr "高级探测方式"
+
 msgid "All WAN links disabled"
-msgstr "全部 WAN 线路已禁用"
+msgstr "所有 WAN 线路均已禁用"
 
-msgid "Enable a WAN link"
-msgstr "启用一条 WAN 线路"
+msgid "All reported counter objects"
+msgstr "全部已报告的计数器对象"
 
-msgid "No usable path"
-msgstr "没有可用路径"
+msgid "All reported rules"
+msgstr "全部已报告的规则"
 
-msgid "No failover yet"
-msgstr "尚无故障切换"
+msgid "All reported validation checks passed."
+msgstr "全部已报告的校验均已通过。"
+
+msgid "Allowed IPs"
+msgstr "允许的 IP"
+
+msgid "Allowlisted install groups known to mwan4"
+msgstr "mwan4 已知的允许安装组件组"
+
+msgid "Any"
+msgstr "任意"
+
+msgid "Any destination"
+msgstr "任意目标"
+
+msgid "Any destination port"
+msgstr "任意目标端口"
+
+msgid "Any family"
+msgstr "任意协议族"
+
+msgid "Any ingress"
+msgstr "任意入站接口"
+
+msgid "Any interface"
+msgstr "任意接口"
+
+msgid "Any mwan4 procd instance is active"
+msgstr "存在运行中的 mwan4 procd 实例"
+
+msgid "Any or 203.0.113.0/24"
+msgstr "任意或 203.0.113.0/24"
+
+msgid "Any protocol"
+msgstr "任意协议"
+
+msgid "Any source"
+msgstr "任意来源"
+
+msgid "Any source port"
+msgstr "任意源端口"
+
+msgid "Any traffic"
+msgstr "任意流量"
+
+msgid "Apply BFD workflow"
+msgstr "应用 BFD 配置流程"
+
+msgid "Apply FRR/BFD"
+msgstr "应用 FRR/BFD"
+
+msgid "Apply PBR workflow"
+msgstr "应用 PBR 配置流程"
+
+msgid "Apply VRF workflow"
+msgstr "应用 VRF 配置流程"
+
+msgid "Apply endpoint exemptions"
+msgstr "应用端点豁免"
+
+msgid "Apply network workflow"
+msgstr "应用网络配置流程"
+
+msgid "Apply pending changes"
+msgstr "应用待处理更改"
+
+msgid "Apply tunnel workflow"
+msgstr "应用隧道配置流程"
+
+msgid "Attention needed"
+msgstr "需要处理"
+
+msgid "Audit routing table, rule, chain, and counter ownership before cleanup or coexistence changes."
+msgstr "清理或调整共存配置前，请检查路由表、规则、链和计数器的归属。"
+
+msgid "Audit which routing tables, rules, chains, and counters are owned by mwan4 before cleanup or coexistence changes."
+msgstr "清理或调整共存配置前，请检查哪些路由表、规则、链和计数器由 mwan4 管理。"
+
+msgid "Auto from WAN"
+msgstr "根据 WAN 自动获取"
+
+msgid "Availability only"
+msgstr "仅检测可用性"
+
+msgid "Availability-only health checks; latency/loss SLA is not enforced."
+msgstr "仅检测可用性，不启用延迟和丢包率质量门槛。"
+
+msgid "Available"
+msgstr "可用"
+
+msgid "Available strategies for tunnel endpoint traffic"
+msgstr "隧道端点流量的可用策略"
+
+msgid "BFD and advanced probes"
+msgstr "BFD 与高级探测"
+
+msgid "BFD peer"
+msgstr "BFD 对端"
+
+msgid "BFD peer is required."
+msgstr "必须填写 BFD 对端。"
+
+msgid "BFD sessions"
+msgstr "BFD 会话"
+
+msgid "BFD validation"
+msgstr "BFD 校验"
+
+msgid "Back to overview."
+msgstr "返回概览。"
+
+msgid "Backend package tool used for readiness checks"
+msgstr "后端用于就绪检查的软件包工具"
+
+msgid "Backend reported this section as failed"
+msgstr "后端报告此部分失败"
+
+msgid "Backup path"
+msgstr "备用路径"
+
+msgid "Balance traffic across healthy WAN links with equal priority."
+msgstr "在优先级相同的健康 WAN 线路之间分配流量。"
+
+msgid "Base name"
+msgstr "基本名称"
+
+msgid "Basic health check"
+msgstr "基本健康检测"
+
+msgid "Bit mask used to keep mwan4 policy marks separate from other firewall marks. Use enough set bits for all interface IDs plus reserved fallback marks."
+msgstr "此位掩码用于隔离 mwan4 策略标记与其他防火墙标记。设置的位数须能容纳所有接口 ID 和保留的回退标记。"
+
+msgid "Bring WAN link %s up"
+msgstr "将 WAN 线路 %s 加入路由"
+
+msgid "Build a working MultiWAN setup"
+msgstr "配置多线路网络"
+
+msgid "Built in"
+msgstr "内置"
+
+msgid "Bytes"
+msgstr "字节"
+
+msgid "Cancel"
+msgstr "取消"
+
+msgid "Chain"
+msgstr "链"
+
+msgid "Chain state"
+msgstr "链状态"
+
+msgid "Chains"
+msgstr "链"
+
+msgid "Chains missing"
+msgstr "链缺失"
+
+msgid "Chains present"
+msgstr "链已存在"
+
+msgid "Change was not applied: %s"
+msgstr "更改未应用：%s"
+
+msgid "Check"
+msgstr "检查"
+
+msgid "Check diagnostics"
+msgstr "查看诊断"
+
+msgid "Check endpoint roles, subflow limits, backup flags, and whether source routing keeps each subflow on the intended WAN."
+msgstr "检查端点角色、子流上限、备用标志，以及源地址路由是否让各子流使用预期 WAN。"
+
+msgid "Check optional package bundles for advanced probes, WireGuard, tunnels, PBR, VRF, and FRR/BFD before applying workflows."
+msgstr "应用配置流程前，检查高级探测、WireGuard、隧道、PBR、VRF 和 FRR/BFD 的可选组件包。"
+
+msgid "Check: %s"
+msgstr "检查：%s"
+
+msgid "Choose TCP or UDP before adding source or destination ports."
+msgstr "添加源端口或目标端口前，请选择 TCP 或 UDP。"
+
+msgid "Choose TCP or UDP before matching source or destination ports."
+msgstr "匹配源端口或目标端口前，请选择 TCP 或 UDP。"
+
+msgid "Choose a mwan4 policy path, the main routing table, or a fail-closed action."
+msgstr "选择 mwan4 策略路径、主路由表，或在故障时阻断流量。"
+
+msgid "Choose a preset after at least one WAN link exists. Presets create paths, a strategy, and default routing for you."
+msgstr "添加至少一条 WAN 线路后选择预设，系统会创建路径、策略和默认路由规则。"
+
+msgid "Choose an existing mwan4 strategy, or leave this empty until the strategy exists."
+msgstr "选择已有 mwan4 策略，或在创建策略前留空。"
+
+msgid "Choose one or more kernel endpoint flags for this WAN."
+msgstr "为此 WAN 选择一个或多个内核端点标志。"
+
+msgid "Choose routing mode"
+msgstr "选择分流模式"
+
+msgid "Choose whether traffic should fail closed or use the main routing table when every path in this strategy is unhealthy or unavailable."
+msgstr "当此策略的所有路径均异常或不可用时，选择阻断流量或使用主路由表。"
+
+msgid "Choose who or what this traffic exception applies to. Leave fields empty for any source."
+msgstr "设置此例外规则匹配的流量来源；留空表示任意来源。"
+
+msgid "Choosing a tunnel transport writes type=tunnel plus transport_type in mwan4, and the workflow writes only the external UCI section needed by that selected transport."
+msgstr "选择隧道传输类型后，将在 mwan4 中写入 type=tunnel 和 transport_type；配置流程只写入该传输类型所需的外部 UCI 配置段。"
+
+msgid "Classify tunnel-like interfaces so diagnostics can explain endpoint underlay behavior. Choosing a tunnel transport writes type=tunnel plus transport_type metadata."
+msgstr "分类隧道接口，以便诊断解释端点的底层传输路径；选择隧道类型会写入 type=tunnel 和 transport_type 元数据。"
+
+msgid "Close"
+msgstr "关闭"
+
+msgid "Collision"
+msgstr "冲突"
+
+msgid "Command center"
+msgstr "控制中心"
+
+msgid "Compare mark masks, route-table IDs, rule priorities, service state, and IPv6 uplink coverage between mwan4 and PBR."
+msgstr "对照 mwan4 与 PBR 的标记掩码、路由表 ID、规则优先级、服务状态和 IPv6 出口覆盖情况。"
+
+msgid "Compare saved WAN/SLA settings with live tracker state. Missing measurements stay explicit."
+msgstr "对照已保存的 WAN 和质量门槛设置与实时检测状态；无测量数据时明确显示。"
+
+msgid "Configuration"
+msgstr "配置"
+
+msgid "Configuration is complete; live health data is still catching up."
+msgstr "配置已完成，正在等待实时健康数据。"
+
+msgid "Configuration is present, but the running mwan4 service needs attention before the policy can be trusted."
+msgstr "已有配置，但需处理 mwan4 运行状态后才能确认策略正常生效。"
+
+msgid "Configuration validation failed"
+msgstr "配置校验失败"
+
+msgid "Configuration workflow failed: %s"
+msgstr "配置流程失败：%s"
+
+msgid "Configure"
+msgstr "配置"
+
+msgid "Configure BFD"
+msgstr "配置 BFD"
+
+msgid "Configure BFD visibility"
+msgstr "配置 BFD 状态读取"
+
+msgid "Configure PBR"
+msgstr "配置 PBR"
+
+msgid "Configure PBR harmony"
+msgstr "配置 PBR 共存"
+
+msgid "Configure VRF"
+msgstr "配置 VRF"
+
+msgid "Configure VRF domain"
+msgstr "配置 VRF 域"
+
+msgid "Configure advanced mwan4-owned integrations and use guided panels for externally owned systems such as PBR, MPTCP, VRF, and FRR/BFD."
+msgstr "配置由 mwan4 管理的高级集成，并通过向导配置 PBR、MPTCP、VRF、FRR/BFD 等外部系统。"
 
 msgid "Configure failover"
 msgstr "配置故障切换"
 
-msgid "Restart the service from LuCI, then re-check health and diagnostics."
-msgstr "在 LuCI 重启服务后检查线路健康状态。"
+msgid "Configure failover routing"
+msgstr "配置故障切换路由"
 
-msgid "MultiWAN 4 settings applied and service restarted."
-msgstr "MWAN4 设置已应用，服务已重启。"
+msgid "Configure global MultiWAN settings"
+msgstr "配置多线路全局设置"
 
-msgid "Availability-only health checks; latency/loss SLA is not enforced."
-msgstr "仅检测可用性，未启用延迟或丢包门槛。"
+msgid "Configure load balancing"
+msgstr "配置负载均衡"
 
-msgid "SLA: availability only"
-msgstr "质量门槛：仅检测可用性"
+msgid "Configure load-balancing routing"
+msgstr "配置负载均衡路由"
 
-msgid "Health check"
-msgstr "健康检测"
+msgid "Configure mwan4 probe helpers and SLA thresholds below. BFD sessions are owned by FRR, while mwan4 diagnostics correlates fast failure signals with probe health."
+msgstr "在下方配置 mwan4 探测辅助程序和质量门槛。BFD 会话由 FRR 管理，mwan4 诊断将快速故障信号与探测状态关联。"
 
-msgid "Probe targets"
-msgstr "探测目标"
+msgid "Configure tunnel"
+msgstr "配置隧道"
 
-msgid "Sticky"
-msgstr "保持会话出口"
+msgid "Configure tunnel metadata on WAN links so mwan4 can keep tunnel endpoints on physical underlays and warn about recursion."
+msgstr "配置 WAN 线路的隧道元数据，使 mwan4 将隧道端点固定在物理出口，并提示路由递归风险。"
 
-msgid "Last resort"
-msgstr "最后回退策略"
+msgid "Configure tunnel workflow"
+msgstr "配置隧道流程"
 
-msgid "Reliability"
-msgstr "可靠性"
+msgid "Configured"
+msgstr "已配置"
 
-msgid "Interval"
-msgstr "间隔"
+msgid "Configured BFD peers"
+msgstr "已配置 BFD 对端"
 
-msgid "Timeout"
-msgstr "超时"
+msgid "Configured MPTCP endpoints"
+msgstr "已配置 MPTCP 端点"
 
-msgid "Count"
-msgstr "次数"
+msgid "Configured WAN links"
+msgstr "已配置 WAN 线路"
 
-msgid "Tracking IP addresses"
-msgstr "检测目标地址"
+msgid "Configured WAN links exist, but each one is disabled in mwan4."
+msgstr "已有 WAN 线路配置，但全部在 mwan4 中被禁用。"
+
+msgid "Configured endpoints"
+msgstr "已配置端点"
+
+msgid "Configured interfaces reported by mwan4 status"
+msgstr "mwan4 状态报告中的已配置接口"
+
+msgid "Configured mwan4 interface sections"
+msgstr "已配置 mwan4 接口段"
+
+msgid "Configured targets and live probe rows"
+msgstr "已配置目标与实时探测结果"
+
+msgid "Configured tunnels"
+msgstr "已配置隧道"
+
+msgid "Confirm MPTCP is enabled and the path manager exposes endpoint state."
+msgstr "确认 MPTCP 已启用，且路径管理器能提供端点状态。"
+
+msgid "Confirm mwan4 and PBR agree on marks, masks, rule priorities, table IDs, service state, and IPv6 uplink coverage."
+msgstr "确认 mwan4 与 PBR 的标记、掩码、规则优先级、路由表 ID、服务状态及 IPv6 出口覆盖相容。"
+
+msgid "Conflict"
+msgstr "冲突"
+
+msgid "Continue quick setup"
+msgstr "继续快速配置"
+
+msgid "Contract"
+msgstr "接口约定"
+
+msgid "Control action completed."
+msgstr "控制操作已完成。"
+
+msgid "Control action failed."
+msgstr "控制操作失败。"
+
+msgid "Control action failed: %s"
+msgstr "控制操作失败：%s"
+
+msgid "Control failed: %s"
+msgstr "控制失败：%s"
+
+msgid "Control request failed"
+msgstr "控制请求失败"
+
+msgid "Copy the private key into the WireGuard tunnel workflow and send the public key to the peer. LuCI does not store these keys automatically."
+msgstr "将私钥填入 WireGuard 隧道配置，并把公钥发送给对端；LuCI 不会自动保存这些密钥。"
+
+msgid "Correlate VRF devices, table ownership, routing rules, and BFD/probe placement for segmented WAN designs."
+msgstr "关联 VRF 设备、路由表归属、路由规则及 BFD/探测位置，以检查分段 WAN 设计。"
+
+msgid "Correlate VRF table bindings, BFD sessions, probe helpers, targets, and per-WAN probe state."
+msgstr "关联 VRF 路由表绑定、BFD 会话、探测辅助程序、目标及各 WAN 的探测状态。"
+
+msgid "Counter"
+msgstr "计数器"
+
+msgid "Counter references"
+msgstr "计数器引用"
+
+msgid "Counter reset failed"
+msgstr "计数器重置失败"
+
+msgid "Counter reset failed: %s"
+msgstr "计数器重置失败：%s"
+
+msgid "Counters"
+msgstr "计数器"
+
+msgid "Counters are grouped by rules, strategies, WAN links, PBR, tunnels, and other runtime owners so policy hits are easier to audit."
+msgstr "计数器按规则、策略、WAN 线路、PBR、隧道及其他运行组件分组，便于检查策略命中情况。"
+
+msgid "Create a failover or load-balancing strategy from the overview presets."
+msgstr "通过概览中的预设创建故障切换或负载均衡策略。"
+
+msgid "Create a mwan4 strategy before applying a PBR policy target."
+msgstr "应用 PBR 策略目标前，请先创建 mwan4 策略。"
+
+msgid "Create a mwan4 strategy before wiring PBR policies to a mwan4 target."
+msgstr "将 PBR 规则关联至 mwan4 目标前，请先创建 mwan4 策略。"
+
+msgid "Create a mwan4 strategy first"
+msgstr "请先创建 mwan4 策略"
+
+msgid "Create a netifd VRF device, optional member device binding, and matching mwan4 table/mark ownership metadata."
+msgstr "创建 netifd VRF 设备、可选的成员设备绑定，以及对应的 mwan4 路由表和标记归属元数据。"
+
+msgid "Create default policies"
+msgstr "创建默认规则"
+
+msgid "Create default policy"
+msgstr "创建默认规则"
+
+msgid "Create netifd WAN interface sections and matching mwan4 tracking sections. Existing sections with the same names are updated."
+msgstr "创建 netifd WAN 接口段及对应的 mwan4 检测配置段；同名配置段会被更新。"
+
+msgid "Create source-based rules alongside traffic policy marks. Enable this for MPTCP endpoint alignment or VRF-like source domains."
+msgstr "在流量策略标记之外创建源地址路由规则；MPTCP 端点路由对齐或类似 VRF 的源地址域可启用此项。"
+
+msgid "Create source-based rules in addition to traffic policy marks."
+msgstr "在流量策略标记之外，额外创建基于源地址的路由规则。"
+
+msgid "Create subflows"
+msgstr "创建子流"
+
+msgid "Create tunnel metadata in mwan4 and, when possible, create the matching netifd or daemon UCI section. Secrets and peer keys must be supplied by the operator."
+msgstr "在 mwan4 中创建隧道元数据，并在支持时创建对应的 netifd 或守护进程 UCI 配置段；密钥和对端密钥需由操作者提供。"
+
+msgid "Current routing"
+msgstr "当前分流配置"
+
+msgid "Current routing mode"
+msgstr "当前分流模式"
+
+msgid "Custom paths preserved"
+msgstr "保留自定义路径"
+
+msgid "Custom strategy"
+msgstr "自定义策略"
+
+msgid "DNS or nft set"
+msgstr "DNS 或 nft 集合"
+
+msgid "DNS probe"
+msgstr "DNS 探测"
+
+msgid "DNS/IP set %s"
+msgstr "DNS/IP 集合 %s"
+
+msgid "Data failure mode"
+msgstr "数据流量故障行为"
+
+msgid "Decide what happens when all match conditions are true."
+msgstr "设置全部匹配条件满足时执行的动作。"
+
+msgid "Decision tuple"
+msgstr "决策流量参数"
+
+msgid "Decision type"
+msgstr "决策类型"
+
+msgid "Declare mwan4-owned endpoints only. Each endpoint needs a stable ID so mwan4 can remove the endpoint it created without flushing external MPTCP state."
+msgstr "仅声明由 mwan4 管理的端点。每个端点需有固定 ID，以便删除自身创建的端点而不清除外部 MPTCP 状态。"
+
+msgid "Declare one endpoint per WAN source address and choose signal, subflow, backup, or fullmesh roles."
+msgstr "为每个 WAN 源地址声明一个端点，并选择地址通告、子流、备用或全网格角色。"
+
+msgid "Default VRF"
+msgstr "默认 VRF"
+
+msgid "Default policy missing"
+msgstr "缺少默认规则"
+
+msgid "Default policy needed"
+msgstr "需要默认规则"
+
+msgid "Default routing"
+msgstr "默认路由规则"
+
+msgid "Default routing not set"
+msgstr "未设置默认路由规则"
+
+msgid "Default table"
+msgstr "默认路由表"
+
+msgid "Default tables"
+msgstr "默认路由表"
+
+msgid "Defaults to the endpoint host when left empty."
+msgstr "留空时使用端点主机。"
+
+msgid "Degraded"
+msgstr "部分线路异常"
+
+msgid "Describe the traffic exception and choose how it should be routed."
+msgstr "设置流量例外规则的匹配条件和路由方式。"
+
+msgid "Destination"
+msgstr "目标"
+
+msgid "Destination address"
+msgstr "目标地址"
+
+msgid "Destination address/domain"
+msgstr "目标地址或域名"
+
+msgid "Destination match"
+msgstr "目标匹配条件"
+
+msgid "Destination port"
+msgstr "目标端口"
+
+msgid "Destination ports"
+msgstr "目标端口"
+
+msgid "Details"
+msgstr "详情"
+
+msgid "Detect multiplier"
+msgstr "检测倍数"
+
+msgid "Detected tunnel interfaces or metadata rows"
+msgstr "检测到的隧道接口或元数据"
+
+msgid "Device"
+msgstr "设备"
+
+msgid "Device is required."
+msgstr "必须填写设备。"
+
+msgid "Diagnostic commands are disabled because this session lacks the mwan4 diagnostics ACL."
+msgstr "当前会话无 mwan4 诊断权限，诊断命令已禁用。"
+
+msgid "Diagnostic commands are disabled for this session."
+msgstr "当前会话的诊断命令已禁用。"
+
+msgid "Diagnostic error"
+msgstr "诊断错误"
+
+msgid "Diagnostics"
+msgstr "诊断"
+
+msgid "Diagnostics failed: %s"
+msgstr "诊断失败：%s"
+
+msgid "Disabled"
+msgstr "已禁用"
+
+msgid "Disabled links cannot carry failover or policy-routed traffic."
+msgstr "禁用的线路不参与故障切换或策略路由。"
+
+msgid "Disabled links stay configured but are ignored by mwan4 routing and health checks."
+msgstr "禁用线路的配置会保留，但不参与 mwan4 路由和健康检测。"
+
+msgid "Done"
+msgstr "完成"
+
+msgid "Down"
+msgstr "移出路由"
+
+msgid "Dual-stack mode creates base IPv4 and base6 IPv6 sections."
+msgstr "双栈模式创建 base IPv4 和 base6 IPv6 配置段。"
+
+msgid "ECMP or source-specific route notes"
+msgstr "ECMP 或源地址特定路由说明"
+
+msgid "ESP"
+msgstr "ESP"
+
+msgid "Each WAN should show the intended signal, subflow, or backup role."
+msgstr "各 WAN 应显示预期的地址通告、子流或备用角色。"
+
+msgid "Edit"
+msgstr "编辑"
+
+msgid "Edit WAN link %s"
+msgstr "编辑 WAN 线路 %s"
+
+msgid "Edit pending change"
+msgstr "编辑待处理更改"
+
+msgid "Edit traffic exception %s"
+msgstr "编辑流量例外规则 %s"
+
+msgid "Effective WAN after health and fallback checks"
+msgstr "健康与回退检查后实际使用的 WAN"
+
+msgid "Enable FRR BFD daemon UCI state and attach BFD peer metadata to a mwan4 WAN link for diagnostics correlation."
+msgstr "启用 FRR BFD 守护进程 UCI 状态，并将 BFD 对端元数据关联至 mwan4 WAN 线路以便诊断。"
+
+msgid "Enable MPTCP configuration"
+msgstr "启用 MPTCP 配置"
+
+msgid "Enable PBR"
+msgstr "启用 PBR"
+
+msgid "Enable SLA checks so high latency or packet loss can mark the link unhealthy."
+msgstr "启用质量门槛检测后，高延迟或高丢包率可将线路判为异常。"
+
+msgid "Enable WAN link %s in routing"
+msgstr "将 WAN 线路 %s 加入路由"
+
+msgid "Enable a WAN link"
+msgstr "启用 WAN 线路"
+
+msgid "Enable at least one WAN link first."
+msgstr "请先启用至少一条 WAN 线路。"
+
+msgid "Enable kernel MPTCP"
+msgstr "启用内核 MPTCP"
+
+msgid "Enable kernel MPTCP and set limits here, then apply mwan4 so the service writes sysctl/iproute2 state."
+msgstr "在此启用内核 MPTCP 并设置上限，再应用 mwan4，由服务写入 sysctl/iproute2 状态。"
+
+msgid "Enable logging for policies that also have per-policy logging enabled."
+msgstr "允许记录同时启用了规则日志的流量策略。"
+
+msgid "Enable mwan4 source routing on the Advanced page and verify endpoint source addresses leave through their owning WAN."
+msgstr "在高级设置中启用 mwan4 源地址路由，确认端点源地址经所属 WAN 出口发送。"
+
+msgid "Enable source routing"
+msgstr "启用源地址路由"
+
+msgid "Enable source routing on the Advanced page and verify endpoint source addresses leave through their owning WAN."
+msgstr "在高级设置中启用源地址路由，确认端点源地址经所属 WAN 出口发送。"
+
+msgid "Enable the link that should carry traffic, then verify health checks."
+msgstr "启用承载流量的线路，再检查健康检测结果。"
+
+msgid "Enabled"
+msgstr "已启用"
+
+msgid "Endpoint"
+msgstr "端点"
+
+msgid "Endpoint ID"
+msgstr "端点 ID"
+
+msgid "Endpoint address"
+msgstr "端点地址"
+
+msgid "Endpoint exemptions"
+msgstr "端点豁免"
+
+msgid "Endpoint failure mode"
+msgstr "端点故障行为"
+
+msgid "Endpoint host"
+msgstr "端点主机"
+
+msgid "Endpoint or kernel issues"
+msgstr "端点或内核问题"
+
+msgid "Endpoint port"
+msgstr "端点端口"
+
+msgid "Endpoint role"
+msgstr "端点角色"
+
+msgid "Endpoint roles"
+msgstr "端点角色"
+
+msgid "Endpoint route checks"
+msgstr "端点路由检查"
+
+msgid "Endpoint routes"
+msgstr "端点路由"
+
+msgid "Endpoint warnings"
+msgstr "端点警告"
+
+msgid "Endpoints"
+msgstr "端点"
+
+msgid "Error"
+msgstr "错误"
+
+msgid "Error output"
+msgstr "错误输出"
+
+msgid "Exceptions"
+msgstr "例外规则"
+
+msgid "Expected"
+msgstr "预期值"
+
+msgid "Expert field for dnsmasq or nftables sets that already exist."
+msgstr "高级选项：填写已有的 dnsmasq 或 nftables 集合名称。"
+
+msgid "Explain"
+msgstr "解释"
+
+msgid "Explain tuple"
+msgstr "解释流量参数"
+
+msgid "Explaining route choice for %s..."
+msgstr "正在解释 %s 的路由选择…"
+
+msgid "Explicit table used by generated route rules; reserve unique values when VRFs are present."
+msgstr "自动生成的路由规则使用的指定路由表；存在 VRF 时请预留唯一值。"
+
+msgid "Extra match and logging"
+msgstr "附加匹配条件与日志"
+
+msgid "Extra routing tables mwan4 should inspect in addition to the main routing table when explaining routes."
+msgstr "解释路由时，除主路由表外 mwan4 还应检查的附加路由表。"
+
+msgid "Extra routing tables mwan4 should inspect in addition to the main routing table."
+msgstr "除主路由表外，mwan4 还应检查的附加路由表。"
+
+msgid "FRR BFD"
+msgstr "FRR BFD"
+
+msgid "FRR BFD and mwan4 BFD metadata were updated."
+msgstr "FRR BFD 和 mwan4 BFD 元数据已更新。"
+
+msgid "FRR BFD readback is available"
+msgstr "可读取 FRR BFD 状态"
+
+msgid "FRR BFD visibility through vtysh"
+msgstr "通过 vtysh 读取 FRR BFD 状态"
+
+msgid "FRR vtysh is not available"
+msgstr "FRR vtysh 不可用"
+
+msgid "FRR vtysh is not available, so BFD sessions cannot be read."
+msgstr "FRR vtysh 不可用，无法读取 BFD 会话。"
+
+msgid "FRR vtysh not available"
+msgstr "FRR vtysh 不可用"
+
+msgid "FRR was reloaded for BFD state."
+msgstr "已重新加载 FRR 以应用 BFD 状态。"
+
+msgid "Fail closed"
+msgstr "故障时阻断"
+
+msgid "Fail closed (drop traffic)"
+msgstr "故障时丢弃流量"
+
+msgid "Fail closed (reject traffic)"
+msgstr "故障时拒绝流量"
+
+msgid "Fail open"
+msgstr "故障时放行"
+
+msgid "Failed targets: %s / %d"
+msgstr "失败目标：%s / %d"
+
+msgid "Failover strategies, generated defaults, and exceptions may not be fully enforced until the runtime warning is cleared."
+msgstr "运行警告解除前，故障切换策略、自动生成的默认规则和例外规则可能未完全生效。"
+
+msgid "Failure"
+msgstr "失败"
+
+msgid "Failure interval (seconds)"
+msgstr "异常检测间隔（秒）"
+
+msgid "Failure latency (ms)"
+msgstr "异常延迟门槛（毫秒）"
+
+msgid "Failure packet loss (%)"
+msgstr "异常丢包率门槛（%）"
+
+msgid "Failure threshold"
+msgstr "失败门槛"
+
+msgid "Failure values take the link down; recovery values bring it back after conditions improve."
+msgstr "达到异常门槛时移除线路；条件改善并达到恢复门槛后重新加入。"
+
+msgid "Failures before down"
+msgstr "判定离线所需失败次数"
+
+msgid "Families"
+msgstr "协议族"
+
+msgid "Family"
+msgstr "协议族"
+
+msgid "Feature"
+msgstr "功能"
+
+msgid "Feature bundles"
+msgstr "功能组件包"
+
+msgid "Feature bundles with all packages installed"
+msgstr "已安装全部依赖的功能组件包"
+
+msgid "Feature package map"
+msgstr "功能与软件包对应表"
+
+msgid "Feature packages were installed. Run diagnostics again to refresh package readiness."
+msgstr "功能软件包已安装；请重新运行诊断以更新软件包就绪状态。"
+
+msgid "Field"
+msgstr "字段"
+
+msgid "Firewall and routing behavior"
+msgstr "防火墙与路由行为"
+
+msgid "Firewall mark"
+msgstr "防火墙标记"
 
 msgid "Firewall mark mask"
 msgstr "防火墙标记掩码"
 
-msgid "Failed targets: %s / %d"
-msgstr "失败目标：%s / %d"
+msgid "Firewall marks"
+msgstr "防火墙标记"
+
+msgid "Firewall marks reserved by mwan4"
+msgstr "mwan4 保留的防火墙标记"
+
+msgid "First-run setup"
+msgstr "首次配置"
+
+msgid "Full diagnostics"
+msgstr "完整诊断"
+
+msgid "Full mesh"
+msgstr "全网格"
+
+msgid "GRE"
+msgstr "GRE"
+
+msgid "GRE/IPIP/SIT endpoint"
+msgstr "GRE/IPIP/SIT 端点"
+
+msgid "Generate WireGuard key"
+msgstr "生成 WireGuard 密钥"
+
+msgid "Generated WireGuard keypair"
+msgstr "已生成的 WireGuard 密钥对"
+
+msgid "Generated files"
+msgstr "生成的文件"
+
+msgid "Generated nftables files"
+msgstr "生成的 nftables 文件"
+
+msgid "Generated paths replaced"
+msgstr "替换自动生成的路径"
+
+msgid "Generic tunnel"
+msgstr "通用隧道"
+
+msgid "Global advanced ownership"
+msgstr "全局高级归属设置"
+
+msgid "Global settings"
+msgstr "全局设置"
+
+msgid "Global settings affect all WAN links, strategies, paths, and traffic policies."
+msgstr "全局设置影响所有 WAN 线路、策略、路径和流量规则。"
+
+msgid "Globals"
+msgstr "全局设置"
+
+msgid "Group"
+msgstr "分组"
+
+msgid "Group rule, strategy, WAN, PBR, and tunnel counters so hit counts line up with the policy decision path."
+msgstr "将规则、策略、WAN、PBR 和隧道计数器分组，使命中次数对应策略决策路径。"
+
+msgid "Grouped counters"
+msgstr "分组计数器"
+
+msgid "HTTP probe"
+msgstr "HTTP 探测"
+
+msgid "HTTPS health checks"
+msgstr "HTTPS 健康检测"
+
+msgid "Health"
+msgstr "健康状态"
+
+msgid "Health check"
+msgstr "健康检测"
+
+msgid "Health check method"
+msgstr "健康检测方式"
+
+msgid "Health check targets"
+msgstr "健康检测目标"
+
+msgid "Health checks"
+msgstr "健康检测"
+
+msgid "Health checks decide when this WAN link can carry traffic."
+msgstr "健康检测决定此 WAN 线路何时可以承载流量。"
+
+msgid "Health tuning"
+msgstr "健康检测参数"
+
+msgid "Health-check tracker processes"
+msgstr "健康检测进程"
+
+msgid "Healthy interval (seconds)"
+msgstr "正常检测间隔（秒）"
+
+msgid "Helper"
+msgstr "辅助程序"
+
+msgid "Hide raw response"
+msgstr "隐藏原始响应"
+
+msgid "Hold data traffic"
+msgstr "阻断数据流量"
+
+msgid "Hold tunnel traffic"
+msgstr "阻断隧道流量"
+
+msgid "Host routes or exemptions for remote endpoints"
+msgstr "远端端点的主机路由或豁免规则"
+
+msgid "Host-route exemptions are applied only for numeric tunnel endpoints with a resolved physical underlay WAN."
+msgstr "主机路由豁免仅用于已明确物理出口 WAN、且地址为 IP 的隧道端点。"
+
+msgid "Hosts or addresses used to decide whether this WAN link is healthy."
+msgstr "用于判断此 WAN 线路是否正常的主机或地址。"
+
+msgid "Hotplug"
+msgstr "热插拔"
+
+msgid "How long a sticky source mapping is kept after the last match."
+msgstr "最后一次匹配后，源地址会话映射的保留时间。"
+
+msgid "ICMP"
+msgstr "ICMP"
+
+msgid "ICMP nping probe"
+msgstr "ICMP nping 探测"
+
+msgid "ICMP ping"
+msgstr "ICMP ping"
+
+msgid "ICMP policies must use IPv4."
+msgstr "ICMP 规则必须使用 IPv4。"
+
+msgid "ICMPv6"
+msgstr "ICMPv6"
+
+msgid "ICMPv6 policies must use IPv6."
+msgstr "ICMPv6 规则必须使用 IPv6。"
+
+msgid "ID"
+msgstr "ID"
+
+msgid "IPIP"
+msgstr "IPIP"
+
+msgid "IPsec"
+msgstr "IPsec"
+
+msgid "IPsec gateway"
+msgstr "IPsec 网关"
+
+msgid "IPv4"
+msgstr "IPv4"
+
+msgid "IPv4 + IPv6"
+msgstr "IPv4 + IPv6"
+
+msgid "IPv4 address"
+msgstr "IPv4 地址"
+
+msgid "IPv4 and IPv6 default traffic will use %s."
+msgstr "IPv4 和 IPv6 的默认流量将使用 %s。"
+
+msgid "IPv4 and IPv6 policies are evaluated separately."
+msgstr "IPv4 和 IPv6 规则分别匹配。"
+
+msgid "IPv4 and IPv6 traffic policies are evaluated separately. Add both only for equivalent dual-stack matches."
+msgstr "IPv4 和 IPv6 流量规则分别匹配；仅在需要相同的双栈匹配时添加两者。"
+
+msgid "IPv4 gateway"
+msgstr "IPv4 网关"
+
+msgid "IPv4 netmask"
+msgstr "IPv4 子网掩码"
+
+msgid "IPv4 only"
+msgstr "仅 IPv4"
+
+msgid "IPv4 protocol"
+msgstr "IPv4 协议"
+
+msgid "IPv4 routes"
+msgstr "IPv4 路由"
+
+msgid "IPv4 rules"
+msgstr "IPv4 规则"
+
+msgid "IPv4 uplink"
+msgstr "IPv4 出口"
+
+msgid "IPv6"
+msgstr "IPv6"
+
+msgid "IPv6 address"
+msgstr "IPv6 地址"
+
+msgid "IPv6 coverage"
+msgstr "IPv6 覆盖情况"
+
+msgid "IPv6 disabled"
+msgstr "IPv6 已禁用"
+
+msgid "IPv6 gateway"
+msgstr "IPv6 网关"
+
+msgid "IPv6 only"
+msgstr "仅 IPv6"
+
+msgid "IPv6 protocol"
+msgstr "IPv6 协议"
+
+msgid "IPv6 routes"
+msgstr "IPv6 路由"
+
+msgid "IPv6 rules"
+msgstr "IPv6 规则"
+
+msgid "IPv6 uplink"
+msgstr "IPv6 出口"
+
+msgid "Ingress interface"
+msgstr "入站接口"
+
+msgid "Initial health state before the first health check result is available."
+msgstr "首次健康检测结果返回前的初始状态。"
+
+msgid "Initial state"
+msgstr "初始状态"
+
+msgid "Inspect active health probes, optional helper availability, BFD sessions, and target-level failures."
+msgstr "检查运行中的健康探测、可选辅助程序的可用性、BFD 会话及各目标的失败情况。"
+
+msgid "Inspect latency/loss policy decisions, then explain the route choice for a representative traffic tuple."
+msgstr "检查延迟和丢包率策略决策，再用代表性的流量参数解释路由选择。"
+
+msgid "Inspect the offline WAN link, health check targets, and SLA thresholds before changing traffic exceptions."
+msgstr "更改流量例外规则前，请检查离线 WAN 线路、健康检测目标和质量门槛。"
+
+msgid "Install %s"
+msgstr "安装 %s"
+
+msgid "Install only allowlisted feature bundles needed by advanced workflows. Package names are fixed by mwan4 backend controls."
+msgstr "仅安装高级配置流程所需、且在允许列表内的组件包；软件包名称由 mwan4 后端控制固定。"
+
+msgid "Installed"
+msgstr "已安装"
+
+msgid "Installed packages: %s"
+msgstr "已安装软件包：%s"
+
+msgid "Instance"
+msgstr "实例"
+
+msgid "Instances"
+msgstr "实例"
+
+msgid "Interface"
+msgstr "接口"
+
+msgid "Interfaces carrying tunnel metadata"
+msgstr "包含隧道元数据的接口"
+
+msgid "Inventory"
+msgstr "清单"
+
+msgid "Keep failure interval while down"
+msgstr "离线时保持异常检测间隔"
+
+msgid "Keep matching flows on the same policy path for the timeout period."
+msgstr "在超时时间内，让匹配的流量保持使用同一策略路径。"
+
+msgid "Keep mwan4 table IDs and marks explicit before combining VRFs, source routing, and generated traffic policies."
+msgstr "组合使用 VRF、源地址路由和自动生成的流量规则前，请明确 mwan4 的路由表 ID 和标记。"
+
+msgid "Keep probing at the failure interval until the WAN link recovers."
+msgstr "保持按异常检测间隔探测，直到 WAN 线路恢复。"
+
+msgid "Keep traffic exception names 15 characters or less so mwan4 can build nftables rule names."
+msgstr "流量例外规则名称不超过 15 个字符，以便 mwan4 生成 nftables 规则名称。"
+
+msgid "Keeps firewall marks and routing tables stable across reordering, VRFs, and policy rebuilds."
+msgstr "在调整顺序、配置 VRF 及重建策略时保持防火墙标记和路由表不变。"
+
+msgid "Keeps generated firewall marks and routing tables stable across section reordering."
+msgstr "调整配置项顺序时，保持生成的防火墙标记和路由表不变。"
+
+msgid "Kernel VRF lookup rule is missing"
+msgstr "缺少内核 VRF 查询规则"
+
+msgid "Kernel VRF lookup rules are present"
+msgstr "内核 VRF 查询规则已存在"
+
+msgid "Kernel net.mptcp.enabled value"
+msgstr "内核 net.mptcp.enabled 值"
+
+msgid "Kernel net.mptcp.enabled value."
+msgstr "内核 net.mptcp.enabled 值。"
+
+msgid "Kernel state"
+msgstr "内核状态"
+
+msgid "Kind"
+msgstr "类型"
+
+msgid "Latency %sms / loss %s%%"
+msgstr "延迟 %s 毫秒 / 丢包率 %s%%"
+
+msgid "Latency / loss"
+msgstr "延迟 / 丢包率"
+
+msgid "Leave empty for any destination, or enter a CIDR, single IP, or host address."
+msgstr "留空匹配任意目标，或填写 CIDR 网段、单个 IP 或主机地址。"
+
+msgid "Leave empty to use the live source address of the selected WAN link."
+msgstr "留空使用所选 WAN 线路当前的源地址。"
+
+msgid "Let latency or packet loss mark a link degraded or offline, not just probe reachability."
+msgstr "根据延迟和丢包率将线路判为性能下降或离线，而不仅检查是否可达。"
+
+msgid "Limit"
+msgstr "上限"
+
+msgid "Limit matches to traffic entering from this network interface."
+msgstr "仅匹配从此网络接口进入的流量。"
+
+msgid "Limited access"
+msgstr "权限受限"
+
+msgid "Link risk detected"
+msgstr "发现线路风险"
+
+msgid "Links classified as tunnel transports"
+msgstr "被分类为隧道传输的线路"
+
+msgid "Links currently enforcing latency/loss thresholds"
+msgstr "当前启用延迟和丢包率门槛的线路"
+
+msgid "Links enabled for policy routing"
+msgstr "已启用策略路由的线路"
+
+msgid "Links using helpers that cannot measure SLA values"
+msgstr "使用无法测量质量门槛参数的辅助程序的线路"
+
+msgid "Live MPTCP endpoint roles"
+msgstr "实时 MPTCP 端点角色"
+
+msgid "Live endpoint roles"
+msgstr "实时端点角色"
+
+msgid "Live match"
+msgstr "实时匹配"
+
+msgid "Live targets sampled by mwan4 trackers"
+msgstr "mwan4 检测进程采样的实时目标"
+
+msgid "Local endpoint/source"
+msgstr "本地端点或源地址"
+
+msgid "Local tunnel endpoint"
+msgstr "本地隧道端点"
+
+msgid "Log level"
+msgstr "日志级别"
+
+msgid "Log matches"
+msgstr "记录匹配日志"
+
+msgid "Log matching rules"
+msgstr "记录规则匹配日志"
+
+msgid "Log matching traffic policies"
+msgstr "记录流量规则匹配日志"
+
+msgid "Logging"
+msgstr "日志"
+
+msgid "Logging enabled"
+msgstr "日志已启用"
+
+msgid "Low immediate risk"
+msgstr "当前风险较低"
+
+msgid "Lower metrics are preferred. Equal metrics are balanced by weight."
+msgstr "优先使用跃点值较低的路径；跃点值相同时按权重均衡。"
+
+msgid "MPTCP"
+msgstr "MPTCP"
+
+msgid "MPTCP attention needed"
+msgstr "需要检查 MPTCP"
+
+msgid "MPTCP diagnostic error"
+msgstr "MPTCP 诊断错误"
+
+msgid "MPTCP endpoint management"
+msgstr "MPTCP 端点管理"
+
+msgid "MPTCP endpoints and subflow limits are kernel/iproute2 state. Use this workspace to align mwan4 source routing and verify the live MPTCP state."
+msgstr "MPTCP 端点和子流上限属于内核/iproute2 状态；在此对齐 mwan4 源地址路由并检查实时 MPTCP 状态。"
+
+msgid "MPTCP is not configured by mwan4 yet"
+msgstr "mwan4 尚未配置 MPTCP"
+
+msgid "MPTCP kernel/sysctl state"
+msgstr "MPTCP 内核/sysctl 状态"
+
+msgid "MPTCP limits"
+msgstr "MPTCP 上限"
+
+msgid "MPTCP management is disabled because this session lacks the mwan4 configuration ACL."
+msgstr "当前会话无 mwan4 配置权限，MPTCP 管理已禁用。"
+
+msgid "MPTCP must be enabled before endpoints matter"
+msgstr "启用 MPTCP 后端点才会生效"
+
+msgid "MPTCP must be enabled before endpoints matter."
+msgstr "启用 MPTCP 后端点才会生效。"
+
+msgid "MPTCP route alignment"
+msgstr "MPTCP 路由对齐"
+
+msgid "MPTCP source-route alignment"
+msgstr "MPTCP 源地址路由对齐"
+
+msgid "MPTCP support detected by diagnostics"
+msgstr "诊断检测到的 MPTCP 支持情况"
+
+msgid "MPTCP workflow"
+msgstr "MPTCP 配置流程"
+
+msgid "Manage MPTCP kernel state, limits, and per-WAN endpoint roles from mwan4-owned configuration."
+msgstr "通过 mwan4 管理的配置设置 MPTCP 内核状态、上限及各 WAN 端点角色。"
+
+msgid "Mark"
+msgstr "标记"
+
+msgid "Mark mask"
+msgstr "标记掩码"
+
+msgid "Mark used before route-table lookup"
+msgstr "路由表查询前使用的标记"
+
+msgid "Mark, table, or uplink conflicts"
+msgstr "标记、路由表或出口冲突"
+
+msgid "Mask overlap between mwan4 and PBR"
+msgstr "mwan4 与 PBR 掩码重叠"
+
+msgid "Mask used for mwan4 policy marks. Keep it separate from PBR fw_mask."
+msgstr "mwan4 策略标记使用的掩码，应与 PBR 的 fw_mask 分离。"
+
+msgid "Master"
+msgstr "主设备"
+
+msgid "Matched"
+msgstr "已匹配"
+
+msgid "Matched bytes across groups"
+msgstr "各组匹配字节总数"
+
+msgid "Matched packets"
+msgstr "已匹配数据包"
+
+msgid "Matched packets across groups"
+msgstr "各组匹配数据包总数"
+
+msgid "Matched policy"
+msgstr "匹配的规则"
+
+msgid "Matched policy strategy"
+msgstr "匹配规则的策略"
+
+msgid "Max TTL"
+msgstr "最大 TTL"
+
+msgid "Maximum additional subflows"
+msgstr "最大附加子流数"
+
+msgid "Maximum additional subflows the kernel path manager may create."
+msgstr "内核路径管理器允许创建的最大附加子流数。"
+
+msgid "Maximum additional subflows."
+msgstr "最大附加子流数。"
+
+msgid "Maximum hop count for ping health check probes."
+msgstr "ping 健康检测探测允许的最大跳数。"
+
+msgid "Maximum peer-announced addresses accepted by the kernel MPTCP path manager."
+msgstr "内核 MPTCP 路径管理器允许接受的对端通告地址最大数量。"
+
+msgid "Measured"
+msgstr "已测量"
+
+msgid "Member device"
+msgstr "成员设备"
+
+msgid "Message"
+msgstr "消息"
+
+msgid "Metadata and integration writes"
+msgstr "元数据与集成配置写入"
+
+msgid "Method"
+msgstr "方式"
+
+msgid "Minimum RX interval"
+msgstr "最小接收间隔"
+
+msgid "Minimum TX interval"
+msgstr "最小发送间隔"
+
+msgid "Minimum number of targets that must pass before the WAN link is considered healthy."
+msgstr "判定 WAN 线路健康时，至少需要通过检测的目标数量。"
+
+msgid "Missing"
+msgstr "缺失"
+
+msgid "Missing counter definitions"
+msgstr "缺少计数器定义"
+
+msgid "Missing helpers, BFD sessions, or unhealthy targets"
+msgstr "缺少辅助程序、BFD 会话或存在异常目标"
+
+msgid "Missing one or more packages: %s"
+msgstr "缺少一个或多个软件包：%s"
+
+msgid "Missing packages"
+msgstr "缺少软件包"
+
+msgid "Missing uplink"
+msgstr "缺少出口"
+
+msgid "Monitor WAN workspace"
+msgstr "查看 WAN 状态"
+
+msgid "Monitor and refine"
+msgstr "观察并调整"
+
+msgid "Most links only need an address family and two reliable targets."
+msgstr "多数线路只需设置地址协议族和两个可靠的检测目标。"
+
+msgid "Most networks only need the default routing from the routing mode above. Add an exception only for guest Wi-Fi, VPN clients, video calls, or a specific service port."
+msgstr "多数网络使用上述分流模式的默认规则即可；访客 Wi-Fi、VPN 客户端、视频通话或特定服务端口可按需添加例外规则。"
+
+msgid "MultiWAN 4"
+msgstr "MWAN4 多线路管理"
+
+msgid "MultiWAN 4 - Advanced"
+msgstr "MWAN4 - 高级设置"
+
+msgid "MultiWAN 4 - Diagnostics"
+msgstr "MWAN4 - 诊断"
+
+msgid "MultiWAN 4 - Global Settings"
+msgstr "MWAN4 - 全局设置"
+
+msgid "MultiWAN 4 - MPTCP"
+msgstr "MWAN4 - MPTCP"
+
+msgid "MultiWAN 4 - Path Members"
+msgstr "MWAN4 - 路径成员"
+
+msgid "MultiWAN 4 - Strategies"
+msgstr "MWAN4 - 分流策略"
+
+msgid "MultiWAN 4 - Traffic Policies"
+msgstr "MWAN4 - 流量规则"
+
+msgid "MultiWAN 4 - WAN Links"
+msgstr "MWAN4 - WAN 线路"
+
+msgid "MultiWAN 4 settings applied and service restarted."
+msgstr "MWAN4 设置已应用，服务已重启。"
+
+msgid "MultiWAN 4 settings applied. Service restart is hidden by this session ACL."
+msgstr "MWAN4 设置已应用；当前会话权限不允许重启服务。"
+
+msgid "Multipath TCP"
+msgstr "多路径 TCP"
+
+msgid "Name"
+msgstr "名称"
+
+msgid "Narrow by destination address or service port when needed."
+msgstr "按需使用目标地址或服务端口缩小匹配范围。"
+
+msgid "Needs attention"
+msgstr "需要处理"
+
+msgid "Network and mwan4 WAN sections were updated."
+msgstr "网络及 mwan4 WAN 配置段已更新。"
+
+msgid "Network interface"
+msgstr "网络接口"
+
+msgid "Network interface connected"
+msgstr "网络接口已连接"
+
+msgid "Network interface disconnected"
+msgstr "网络接口未连接"
+
+msgid "New WAN link"
+msgstr "新建 WAN 线路"
+
+msgid "New traffic exception"
+msgstr "新建流量例外规则"
+
+msgid "Next"
+msgstr "下一步"
+
+msgid "Next check"
+msgstr "下一项检查"
+
+msgid "No"
+msgstr "否"
+
+msgid "No BFD sessions were reported."
+msgstr "未报告 BFD 会话。"
+
+msgid "No MPTCP endpoints were reported."
+msgstr "未报告 MPTCP 端点。"
+
+msgid "No MPTCP limits were reported."
+msgstr "未报告 MPTCP 上限。"
+
+msgid "No MPTCP source-route alignment rows were reported."
+msgstr "未报告 MPTCP 源地址路由对齐结果。"
+
+msgid "No PBR harmony warnings were reported."
+msgstr "未报告 PBR 共存警告。"
+
+msgid "No PBR policy target rows were reported."
+msgstr "未报告 PBR 策略目标。"
+
+msgid "No PBR routing rules were reported."
+msgstr "未报告 PBR 路由规则。"
+
+msgid "No PBR supported-interface coverage rows were reported."
+msgstr "未报告 PBR 支持接口覆盖情况。"
+
+msgid "No PBR validation rows reported yet."
+msgstr "尚未报告 PBR 校验结果。"
+
+msgid "No PBR validation rows were reported."
+msgstr "未报告 PBR 校验结果。"
+
+msgid "No VRF interface bindings were reported."
+msgstr "未报告 VRF 接口绑定。"
+
+msgid "No VRF master"
+msgstr "无 VRF 主设备"
+
+msgid "No VRF routing rules were reported."
+msgstr "未报告 VRF 路由规则。"
+
+msgid "No VRF rows were reported."
+msgstr "未报告 VRF 信息。"
+
+msgid "No VRF table routes were reported."
+msgstr "未报告 VRF 路由表中的路由。"
+
+msgid "No VRF validation rows reported yet."
+msgstr "尚未报告 VRF 校验结果。"
+
+msgid "No VRF validation rows were reported."
+msgstr "未报告 VRF 校验结果。"
+
+msgid "No WAN link diagnostics were reported."
+msgstr "未报告 WAN 线路诊断结果。"
+
+msgid "No WAN links are configured, so MultiWAN decisions have not started."
+msgstr "尚未配置 WAN 线路，多线路路由尚未开始工作。"
+
+msgid "No WAN links configured"
+msgstr "尚未配置 WAN 线路"
+
+msgid "No WAN links configured."
+msgstr "尚未配置 WAN 线路。"
+
+msgid "No advanced options"
+msgstr "无高级选项"
+
+msgid "No chain"
+msgstr "无链"
+
+msgid "No chain state was reported."
+msgstr "未报告链状态。"
+
+msgid "No configuration or diagnostics ACL is available for this session."
+msgstr "当前会话无配置或诊断权限。"
+
+msgid "No configured BFD metadata reported yet."
+msgstr "尚未报告已配置的 BFD 元数据。"
+
+msgid "No diagnostics output returned."
+msgstr "未返回诊断输出。"
+
+msgid "No enabled WAN links"
+msgstr "无已启用的 WAN 线路"
+
+msgid "No endpoint route rows were reported."
+msgstr "未报告端点路由。"
+
+msgid "No failover yet"
+msgstr "尚未配置故障切换"
+
+msgid "No generated nftables files were reported."
+msgstr "未报告生成的 nftables 文件。"
+
+msgid "No l3mdev routing rules were reported."
+msgstr "未报告 l3mdev 路由规则。"
+
+msgid "No logging"
+msgstr "不记录日志"
+
+msgid "No message"
+msgstr "无消息"
+
+msgid "No mwan4 BFD metadata rows were reported."
+msgstr "未报告 mwan4 BFD 元数据。"
+
+msgid "No mwan4 counters reported. Generate traffic that should match a traffic policy, then run Counters again."
+msgstr "未报告 mwan4 计数器。请产生应匹配流量规则的流量，再重新运行计数器诊断。"
+
+msgid "No mwan4-owned MPTCP endpoints are configured."
+msgstr "未配置由 mwan4 管理的 MPTCP 端点。"
+
+msgid "No nft rule counter references were reported."
+msgstr "未报告 nft 规则的计数器引用。"
+
+msgid "No output"
+msgstr "无输出"
+
+msgid "No ownership conflicts were reported."
+msgstr "未报告归属冲突。"
+
+msgid "No ownership object inventory was reported."
+msgstr "未报告归属对象清单。"
+
+msgid "No ownership rows were reported."
+msgstr "未报告归属信息。"
+
+msgid "No package list reported"
+msgstr "未报告软件包列表"
+
+msgid "No package readiness rows were reported."
+msgstr "未报告软件包就绪情况。"
+
+msgid "No policy matched"
+msgstr "无匹配规则"
+
+msgid "No policy routing rules were reported."
+msgstr "未报告策略路由规则。"
+
+msgid "No probe failure rows were reported."
+msgstr "未报告探测失败记录。"
+
+msgid "No probe helper availability data was reported."
+msgstr "未报告探测辅助程序可用性数据。"
+
+msgid "No probe rows were reported."
+msgstr "未报告探测结果。"
+
+msgid "No quality edge states were reported."
+msgstr "未报告质量临界状态。"
+
+msgid "No quality policy rows were reported."
+msgstr "未报告质量策略。"
+
+msgid "No reason reported"
+msgstr "未报告原因"
+
+msgid "No records reported by this diagnostic section."
+msgstr "此诊断部分未报告记录。"
+
+msgid "No recursion graph was reported."
+msgstr "未报告递归关系图。"
+
+msgid "No role flags"
+msgstr "无角色标志"
+
+msgid "No route"
+msgstr "无路由"
+
+msgid "No route lines were reported."
+msgstr "未报告路由条目。"
+
+msgid "No routing mode configured."
+msgstr "尚未配置分流模式。"
+
+msgid "No routing modes yet. Use Routing mode first, or choose the main routing table or a fail-closed action."
+msgstr "尚无分流模式。请先配置分流模式，或选择主路由表、故障阻断动作。"
+
+msgid "No runtime warnings are reported. Keep an eye on health checks after WAN or firewall changes."
+msgstr "当前无运行警告。更改 WAN 或防火墙设置后，请留意健康检测结果。"
+
+msgid "No service instances were reported."
+msgstr "未报告服务实例。"
+
+msgid "No set"
+msgstr "无集合"
+
+msgid "No skipped-policy trace was reported."
+msgstr "未报告跳过规则的跟踪记录。"
+
+msgid "No strategies"
+msgstr "无分流策略"
+
+msgid "No strategies configured"
+msgstr "未配置策略"
+
+msgid "No targets"
+msgstr "无检测目标"
+
+msgid "No tracker instances were expected."
+msgstr "无需检测进程实例。"
+
+msgid "No tracker rows were reported."
+msgstr "未报告检测进程信息。"
+
+msgid "No traffic exceptions yet."
+msgstr "尚无流量例外规则。"
+
+msgid "No tunnel recursion warnings were reported."
+msgstr "未报告隧道路由递归警告。"
+
+msgid "No tunnel rows were reported."
+msgstr "未报告隧道信息。"
+
+msgid "No underlay interfaces"
+msgstr "无底层传输接口"
+
+msgid "No usable path"
+msgstr "无可用路径"
+
+msgid "No validation rows reported yet."
+msgstr "尚未报告校验结果。"
+
+msgid "No values were reported."
+msgstr "未报告数值。"
+
+msgid "None"
+msgstr "无"
+
+msgid "None reported"
+msgstr "无报告"
+
+msgid "Not available"
+msgstr "不可用"
+
+msgid "Not bound"
+msgstr "未绑定"
+
+msgid "Not configured"
+msgstr "未配置"
+
+msgid "Not detected"
+msgstr "未检测到"
+
+msgid "Not installed"
+msgstr "未安装"
+
+msgid "Not interface-specific"
+msgstr "不针对特定接口"
+
+msgid "Not measured"
+msgstr "未测量"
+
+msgid "Not reported"
+msgstr "未报告"
+
+msgid "Not running"
+msgstr "未运行"
+
+msgid "Not selected"
+msgstr "未选择"
+
+msgid "Not set"
+msgstr "未设置"
+
+msgid "OK"
+msgstr "正常"
+
+msgid "Object"
+msgstr "对象"
+
+msgid "Observed"
+msgstr "观测值"
+
+msgid "Off"
+msgstr "关闭"
+
+msgid "Offline"
+msgstr "离线"
+
+msgid "Online"
+msgstr "在线"
+
+msgid "Open Advanced"
+msgstr "打开高级设置"
+
+msgid "Open Diagnostics"
+msgstr "打开诊断"
+
+msgid "Open Diagnostics for raw counters"
+msgstr "打开诊断查看原始计数器"
+
+msgid "Open Diagnostics to inspect the remaining warning details."
+msgstr "打开诊断查看剩余警告的详情。"
+
+msgid "Open MPTCP"
+msgstr "打开 MPTCP"
+
+msgid "Open MPTCP diagnostics"
+msgstr "打开 MPTCP 诊断"
+
+msgid "Open PBR"
+msgstr "打开 PBR"
+
+msgid "Open PBR diagnostics"
+msgstr "打开 PBR 诊断"
+
+msgid "Open diagnostics"
+msgstr "打开诊断"
+
+msgid "Open diagnostics or ask an operator to restart mwan4; this session cannot run service controls."
+msgstr "请打开诊断或联系管理员重启 mwan4；当前会话无服务控制权限。"
+
+msgid "Open network overview"
+msgstr "打开网络概览"
+
+msgid "Open ownership diagnostics"
+msgstr "打开归属诊断"
+
+msgid "Open probe diagnostics"
+msgstr "打开探测诊断"
+
+msgid "Open this workflow explicitly before mwan4 writes net.mptcp.enabled or creates kernel endpoint state. Visiting this page does not create a disabled config section."
+msgstr "需明确打开此配置流程，mwan4 才会写入 net.mptcp.enabled 或创建内核端点状态；仅访问此页面不会创建禁用的配置段。"
+
+msgid "Open tunnel diagnostics"
+msgstr "打开隧道诊断"
+
+msgid "OpenVPN"
+msgstr "OpenVPN"
+
+msgid "OpenVPN config path"
+msgstr "OpenVPN 配置文件路径"
+
+msgid "Operational hint shown in diagnostics when endpoint underlay health fails."
+msgstr "端点底层传输线路异常时，在诊断中显示的操作提示。"
+
+msgid "Optional CIDR, single IP, or host address to match as the traffic source."
+msgstr "可选：填写用于匹配流量来源的 CIDR 网段、单个 IP 或主机地址。"
+
+msgid "Optional CIDR, single IP, or host address."
+msgstr "可选：CIDR 网段、单个 IP 或主机地址。"
+
+msgid "Optional Linux routing table ID. Leave empty to reuse the stable interface ID."
+msgstr "可选：Linux 路由表 ID；留空使用固定接口 ID。"
+
+msgid "Optional MPTCP signal port. Most endpoint definitions should leave this empty."
+msgstr "可选：MPTCP 地址通告端口；多数端点应留空。"
+
+msgid "Optional fwmark for this interface. It must fit inside the global firewall mark mask."
+msgstr "可选：此接口的防火墙标记，必须位于全局标记掩码范围内。"
+
+msgid "Optional fwmark. It must fit inside the global firewall mark mask and not overlap PBR marks."
+msgstr "可选：防火墙标记，必须位于全局掩码内，且不与 PBR 标记重叠。"
+
+msgid "Optional network interface where matching traffic enters the router."
+msgstr "可选：匹配流量进入路由器的网络接口。"
+
+msgid "Optional nft set containing destination domains or addresses."
+msgstr "可选：包含目标域名或地址的 nft 集合。"
+
+msgid "Optional source, nft set, sticky-session, and logging fields stay visible so the rule is reviewable at a glance."
+msgstr "源地址、nft 集合、会话保持和日志等可选条件集中显示，便于检查规则。"
+
+msgid "Optional: route guest Wi-Fi, VPN clients, video calls, or a service through a special path."
+msgstr "可选：为访客 Wi-Fi、VPN 客户端、视频通话或特定服务指定路径。"
+
+msgid "Output"
+msgstr "输出"
+
+msgid "Overview"
+msgstr "概览"
+
+msgid "Owned marks"
+msgstr "管理的标记"
+
+msgid "Owned runtime objects"
+msgstr "管理的运行对象"
+
+msgid "Owned tables"
+msgstr "管理的路由表"
+
+msgid "Owner"
+msgstr "管理方"
+
+msgid "Ownership"
+msgstr "归属"
+
+msgid "Ownership and cleanup"
+msgstr "归属与清理"
+
+msgid "Ownership conflicts"
+msgstr "归属冲突"
+
+msgid "Ownership diagnostics"
+msgstr "归属诊断"
+
+msgid "Ownership object inventory"
+msgstr "归属对象清单"
+
+msgid "PBR"
+msgstr "PBR"
+
+msgid "PBR IPv6 policy routing target"
+msgstr "PBR IPv6 策略路由目标"
+
+msgid "PBR configuration was updated."
+msgstr "PBR 配置已更新。"
+
+msgid "PBR harmony"
+msgstr "PBR 共存"
+
+msgid "PBR interface coverage"
+msgstr "PBR 接口覆盖情况"
+
+msgid "PBR is configured by luci-app-pbr, but mwan4 can verify marks, rule priorities, IPv6 uplinks, and supported-interface coverage."
+msgstr "PBR 由 luci-app-pbr 配置，mwan4 可检查标记、规则优先级、IPv6 出口及支持接口覆盖情况。"
+
+msgid "PBR is not enabled; open luci-app-pbr before adding supported-interface coverage."
+msgstr "PBR 未启用；添加支持接口前，请先打开 luci-app-pbr。"
+
+msgid "PBR policy target"
+msgstr "PBR 策略目标"
+
+msgid "PBR policy targets"
+msgstr "PBR 策略目标"
+
+msgid "PBR policy targets must use mwan4 strategy names: %s. Direct mwan4 WAN links are uplinks/support entries, not policy targets."
+msgstr "PBR 策略目标必须使用 mwan4 策略名称：%s。mwan4 的 WAN 线路仅作为出口或支持接口，不能直接作为策略目标。"
+
+msgid "PBR routing rules"
+msgstr "PBR 路由规则"
+
+msgid "PBR service"
+msgstr "PBR 服务"
+
+msgid "PBR supported_interface covers enabled mwan4 WAN links reported by diagnostics."
+msgstr "PBR 的 supported_interface 已覆盖诊断报告中的已启用 mwan4 WAN 线路。"
+
+msgid "PBR supported_interface is missing enabled mwan4 WAN links: %s. Review in luci-app-pbr before applying any copied commands."
+msgstr "PBR 的 supported_interface 缺少已启用的 mwan4 WAN 线路：%s。应用复制的命令前，请先在 luci-app-pbr 中检查。"
+
+msgid "PBR validation"
+msgstr "PBR 校验"
+
+msgid "PBR warnings"
+msgstr "PBR 警告"
+
+msgid "Package"
+msgstr "软件包"
+
+msgid "Package manager"
+msgstr "软件包管理器"
+
+msgid "Package readiness"
+msgstr "软件包就绪情况"
+
+msgid "Packages"
+msgstr "软件包"
+
+msgid "Packages needed by configured advanced workflows"
+msgstr "已配置高级流程所需的软件包"
+
+msgid "Packages not installed yet"
+msgstr "尚未安装的软件包"
+
+msgid "Packets"
+msgstr "数据包"
+
+msgid "Path"
+msgstr "路径"
+
+msgid "Path counters"
+msgstr "路径计数器"
+
+msgid "Path members bind a WAN link to a priority metric and weight. Strategies choose one or more paths."
+msgstr "路径成员为 WAN 线路指定跃点值和权重；策略使用一条或多条路径。"
+
+msgid "Path references"
+msgstr "路径引用"
+
+msgid "Paths"
+msgstr "路径"
+
+msgid "Paths and strategies exist, but no generated default policy selects one yet."
+msgstr "已有路径和策略，但自动生成的默认规则尚未选择策略。"
+
+msgid "Paths this strategy may use when their WAN links are healthy. Path metric and weight decide priority and balancing."
+msgstr "此策略可使用健康 WAN 线路的这些路径；跃点值和权重决定优先级及负载分配。"
+
+msgid "Peer"
+msgstr "对端"
+
+msgid "Pending change preview"
+msgstr "待处理更改预览"
+
+msgid "Per-WAN MPTCP endpoint roles"
+msgstr "各 WAN 的 MPTCP 端点角色"
+
+msgid "Per-family health"
+msgstr "各协议族健康状态"
+
+msgid "Physical WAN"
+msgstr "物理 WAN"
+
+msgid "Pick TCP or UDP before matching ports."
+msgstr "匹配端口前请选择 TCP 或 UDP。"
+
+msgid "Pick an existing network interface and mwan4 will run health checks against it."
+msgstr "选择已有网络接口，mwan4 将对其进行健康检测。"
+
+msgid "Pick an existing network interface and set health check targets."
+msgstr "选择已有网络接口并设置健康检测目标。"
+
+msgid "Ping size"
+msgstr "ping 数据包大小"
+
+msgid "Policy"
+msgstr "策略"
+
+msgid "Policy counter summary"
+msgstr "策略计数器概览"
+
+msgid "Policy enforcement at risk"
+msgstr "策略生效存在风险"
+
+msgid "Policy is active, but at least one WAN link is not currently healthy."
+msgstr "策略正在运行，但至少一条 WAN 线路当前异常。"
+
+msgid "Policy name"
+msgstr "规则名称"
+
+msgid "Policy not active"
+msgstr "策略未运行"
+
+msgid "Policy path"
+msgstr "策略路径"
+
+msgid "Policy path: %s"
+msgstr "策略路径：%s"
+
+msgid "Policy running"
+msgstr "策略运行中"
+
+msgid "Ports support single values, ranges, and comma-separated lists."
+msgstr "支持单个端口、端口范围和逗号分隔的列表。"
+
+msgid "Prerouting"
+msgstr "路由前处理"
+
+msgid "Present"
+msgstr "已存在"
+
+msgid "Prevent tunnel recursion"
+msgstr "防止隧道路由递归"
+
+msgid "Preview changes"
+msgstr "预览更改"
+
+msgid "Primary WAN link"
+msgstr "主用 WAN 线路"
+
+msgid "Priority metric"
+msgstr "优先级跃点值"
+
+msgid "Probe / SLA"
+msgstr "探测 / 质量门槛"
+
+msgid "Probe and BFD visibility"
+msgstr "探测与 BFD 状态读取"
+
+msgid "Probe attempts sent to each health check target during one check cycle."
+msgstr "每个检测周期向各目标发送的探测次数。"
+
+msgid "Probe count"
+msgstr "探测次数"
+
+msgid "Probe failed"
+msgstr "失败"
+
+msgid "Probe failures"
+msgstr "探测失败记录"
+
+msgid "Probe helper availability"
+msgstr "探测辅助程序可用性"
+
+msgid "Probe helper used by mwan4 trackers for this link. Optional helpers appear only when installed."
+msgstr "mwan4 检测进程为此线路使用的探测辅助程序；可选辅助程序仅在安装后显示。"
+
+msgid "Probe method used for this WAN link health check."
+msgstr "此 WAN 线路使用的健康检测方式。"
+
+msgid "Probe state"
+msgstr "探测状态"
+
+msgid "Probe succeeded"
+msgstr "成功"
+
+msgid "Probe targets"
+msgstr "探测目标"
+
+msgid "Probe timeout (seconds)"
+msgstr "探测超时（秒）"
+
+msgid "Probe warnings"
+msgstr "探测警告"
+
+msgid "Probes"
+msgstr "探测"
+
+msgid "Protocol"
+msgstr "协议"
+
+msgid "Provision WAN"
+msgstr "配置 WAN"
+
+msgid "Provision WAN network"
+msgstr "配置 WAN 网络"
+
+msgid "Quality"
+msgstr "质量"
+
+msgid "Quality and route explain"
+msgstr "质量与路由解释"
+
+msgid "Quality decisions"
+msgstr "质量决策"
+
+msgid "Quality edge states"
+msgstr "质量临界状态"
+
+msgid "Quality policy"
+msgstr "质量策略"
+
+msgid "Query tuple"
+msgstr "查询流量参数"
+
+msgid "RPC request failed"
+msgstr "RPC 请求失败"
+
+msgid "Read-only runtime summary. Configuration and diagnostics links are shown only when this session has the matching ACL."
+msgstr "运行状态只读概览；仅在当前会话具备相应权限时显示配置和诊断链接。"
+
+msgid "Ready"
+msgstr "已就绪"
+
+msgid "Ready features"
+msgstr "已就绪功能"
+
+msgid "Reapply a routing preset to create generated IPv4 and IPv6 default policies."
+msgstr "重新应用分流预设，以生成 IPv4 和 IPv6 默认规则。"
+
+msgid "Reason"
+msgstr "原因"
+
+msgid "Recommended action"
+msgstr "建议操作"
+
+msgid "Recommended action: restart mwan4, then ask an administrator with diagnostics access to inspect remaining warnings."
+msgstr "建议重启 mwan4，再请具有诊断权限的管理员检查剩余警告。"
+
+msgid "Recommended action: restart mwan4, then check Diagnostics if the warning remains."
+msgstr "建议重启 mwan4；如警告仍存在，请查看诊断。"
+
+msgid "Recovery interval (seconds)"
+msgstr "恢复检测间隔（秒）"
+
+msgid "Recovery latency (ms)"
+msgstr "恢复延迟门槛（毫秒）"
+
+msgid "Recovery packet loss (%)"
+msgstr "恢复丢包率门槛（%）"
+
+msgid "Recovery threshold"
+msgstr "恢复门槛"
+
+msgid "Recursion graph"
+msgstr "递归关系图"
+
+msgid "Recursion warnings"
+msgstr "递归警告"
+
+msgid "Reduced redundancy"
+msgstr "冗余能力降低"
+
+msgid "References"
+msgstr "引用"
+
+msgid "Refresh MultiWAN 4 runtime"
+msgstr "刷新 MWAN4 运行状态"
+
+msgid "Refresh runtime"
+msgstr "刷新运行状态"
+
+msgid "Refresh runtime state"
+msgstr "刷新运行状态"
+
+msgid "Relative order of policy routing rules"
+msgstr "策略路由规则的相对顺序"
+
+msgid "Relative share when multiple healthy paths have the same metric."
+msgstr "多条健康路径跃点值相同时的相对流量份额。"
+
+msgid "Reliability first"
+msgstr "可靠性优先"
+
+msgid "Reliability-first routing"
+msgstr "可靠性优先分流"
+
+msgid "Reload FRR after configuring BFD, then verify the peer is reachable on the selected WAN."
+msgstr "配置 BFD 后重新加载 FRR，再确认所选 WAN 可访问对端。"
+
+msgid "Remote endpoint host or address used for tunnel recursion and underlay route checks."
+msgstr "用于隧道路由递归及底层路径检查的远端主机或地址。"
+
+msgid "Remove"
+msgstr "删除"
+
+msgid "Remove WAN link %s from routing"
+msgstr "将 WAN 线路 %s 移出路由"
+
+msgid "Reported"
+msgstr "已报告"
+
+msgid "Reported VRF devices or table bindings"
+msgstr "已报告的 VRF 设备或路由表绑定"
+
+msgid "Reported values"
+msgstr "报告值"
+
+msgid "Requested tuple"
+msgstr "请求的流量参数"
+
+msgid "Required chains are present"
+msgstr "所需的链已存在"
+
+msgid "Required healthy targets"
+msgstr "所需健康目标数"
+
+msgid "Required successful health check targets"
+msgstr "所需检测成功目标数"
+
+msgid "Required successful targets"
+msgstr "所需成功目标数"
+
+msgid "Requires TCP or UDP. Supports single values, ranges, and comma-separated lists."
+msgstr "需选择 TCP 或 UDP；支持单个端口、范围和逗号分隔的列表。"
+
+msgid "Requires TCP or UDP. Supports single values, ranges, and lists."
+msgstr "需选择 TCP 或 UDP；支持单个端口、范围和列表。"
+
+msgid "Reset nft counters"
+msgstr "重置 nft 计数器"
+
+msgid "Restart mwan4"
+msgstr "重启 mwan4"
+
+msgid "Restart mwan4 if health cards stay empty after the next refresh."
+msgstr "如再次刷新后健康状态仍为空，请重启 mwan4。"
+
+msgid "Restart the service from LuCI, then re-check health and diagnostics."
+msgstr "通过 LuCI 重启服务，再查看健康状态和诊断。"
+
+msgid "Result"
+msgstr "结果"
+
+msgid "Review WAN links"
+msgstr "检查 WAN 线路"
+
+msgid "Review this change before it is saved and applied."
+msgstr "保存并应用前请检查此更改。"
+
+msgid "Review tunnel metadata, endpoint routes, recursion risk, underlay strategy, and data-plane reachability."
+msgstr "检查隧道元数据、端点路由、递归风险、底层传输策略及数据平面连通性。"
+
+msgid "Review unhealthy links"
+msgstr "检查异常线路"
+
+msgid "Role"
+msgstr "角色"
+
+msgid "Route"
+msgstr "路由"
+
+msgid "Route decision explain"
+msgstr "路由决策解释"
+
+msgid "Route explain"
+msgstr "路由解释"
+
+msgid "Route explain failed: %s"
+msgstr "路由解释失败：%s"
+
+msgid "Route explain tuple"
+msgstr "路由解释流量参数"
+
+msgid "Route lines"
+msgstr "路由条目"
+
+msgid "Route metric"
+msgstr "路由跃点值"
+
+msgid "Route table"
+msgstr "路由表"
+
+msgid "Route table snapshot"
+msgstr "路由表快照"
+
+msgid "Routes"
+msgstr "路由"
+
+msgid "Routes reported by ip -4 route"
+msgstr "ip -4 route 报告的路由"
+
+msgid "Routes reported by ip -6 route"
+msgstr "ip -6 route 报告的路由"
+
+msgid "Routing"
+msgstr "路由"
+
+msgid "Routing domains"
+msgstr "路由域"
+
+msgid "Routing lookup"
+msgstr "路由查询"
+
+msgid "Routing mode"
+msgstr "分流模式"
+
+msgid "Routing mode not configured"
+msgstr "未配置分流模式"
+
+msgid "Routing needed"
+msgstr "需要配置分流"
+
+msgid "Routing pieces are present, but traffic still needs a generated default policy that points at a strategy."
+msgstr "已有路由配置，但仍需生成指向策略的默认流量规则。"
+
+msgid "Routing preset"
+msgstr "分流预设"
+
+msgid "Routing rule lines"
+msgstr "路由规则条目"
+
+msgid "Routing rules attached to VRF tables"
+msgstr "关联至 VRF 路由表的路由规则"
+
+msgid "Routing table"
+msgstr "路由表"
+
+msgid "Routing table ID"
+msgstr "路由表 ID"
+
+msgid "Routing table IDs reserved by mwan4"
+msgstr "mwan4 保留的路由表 ID"
+
+msgid "Routing tables owned by mwan4"
+msgstr "mwan4 管理的路由表"
+
+msgid "Rule"
+msgstr "规则"
+
+msgid "Rule counters"
+msgstr "规则计数器"
+
+msgid "Rule logging enabled"
+msgstr "规则日志已启用"
+
+msgid "Rule logging off"
+msgstr "规则日志已关闭"
+
+msgid "Rule priorities"
+msgstr "规则优先级"
+
+msgid "Rule priority"
+msgstr "规则优先级"
+
+msgid "Rules"
+msgstr "规则"
+
+msgid "Run %s diagnostics"
+msgstr "运行 %s 诊断"
+
+msgid "Run Counters"
+msgstr "运行计数器诊断"
+
+msgid "Run MPTCP"
+msgstr "运行 MPTCP 诊断"
+
+msgid "Run Ownership"
+msgstr "运行归属诊断"
+
+msgid "Run PBR"
+msgstr "运行 PBR 诊断"
+
+msgid "Run Packages"
+msgstr "运行软件包诊断"
+
+msgid "Run Probes"
+msgstr "运行探测诊断"
+
+msgid "Run Quality"
+msgstr "运行质量诊断"
+
+msgid "Run Summary first, then use the advanced workflows below for MPTCP, route decisions, tunnels, ownership, probes, VRF, counters, or PBR harmony."
+msgstr "先运行概览诊断，再使用下方高级流程检查 MPTCP、路由决策、隧道、归属、探测、VRF、计数器或 PBR 共存。"
+
+msgid "Run Tunnels"
+msgstr "运行隧道诊断"
+
+msgid "Run VRF"
+msgstr "运行 VRF 诊断"
+
+msgid "Running"
+msgstr "运行中"
+
+msgid "Running %s diagnostics..."
+msgstr "正在运行 %s 诊断…"
+
+msgid "Running health-check trackers"
+msgstr "运行中的健康检测进程"
+
+msgid "Running procd instances"
+msgstr "运行中的 procd 实例"
+
+msgid "Runtime attention needed"
+msgstr "需要检查运行状态"
+
+msgid "Runtime incomplete"
+msgstr "运行状态不完整"
+
+msgid "Runtime pending"
+msgstr "等待运行状态"
+
+msgid "Runtime state"
+msgstr "运行状态"
+
+msgid "Runtime state of the pbr service"
+msgstr "pbr 服务运行状态"
+
+msgid "Runtime state reported by service ubus"
+msgstr "service ubus 报告的运行状态"
+
+msgid "Runtime state reported by the backend"
+msgstr "后端报告的运行状态"
+
+msgid "Runtime warning"
+msgstr "运行警告"
+
+msgid "SIT"
+msgstr "SIT"
+
+msgid "SLA"
+msgstr "质量门槛"
+
+msgid "SLA metrics"
+msgstr "质量门槛指标"
+
+msgid "SLA policies"
+msgstr "质量门槛策略"
+
+msgid "SLA: %s"
+msgstr "质量门槛：%s"
+
+msgid "SLA: availability only"
+msgstr "质量门槛：仅检测可用性"
+
+msgid "Sample"
+msgstr "样本"
+
+msgid "Saved mwan4 configuration exists, but runtime checks report missing or stale service state."
+msgstr "已有保存的 mwan4 配置，但运行检测显示服务状态缺失或过期。"
+
+msgid "Score"
+msgstr "健康评分"
+
+msgid "Select IPv4, IPv6, or both when this link has working connectivity for each family."
+msgstr "根据此线路的实际连通性，选择 IPv4、IPv6 或双栈。"
+
+msgid "Select an existing network interface, choose an address family, and set health check targets."
+msgstr "选择已有网络接口、地址协议族，并设置健康检测目标。"
+
+msgid "Select the family used when the endpoint address is derived from the WAN link."
+msgstr "端点地址从 WAN 线路获取时使用的地址协议族。"
+
+msgid "Selected WAN"
+msgstr "所选 WAN"
+
+msgid "Send matching traffic through a routing mode, the main routing table, or a fail-closed action."
+msgstr "将匹配流量交给指定分流模式、主路由表，或在故障时阻断。"
+
+msgid "Service"
+msgstr "服务"
+
+msgid "Service instances"
+msgstr "服务实例"
+
+msgid "Service running"
+msgstr "服务运行中"
+
+msgid "Service start, stop, restart, and per-WAN-link controls are hidden because this session lacks the mwan4 operator ACL."
+msgstr "当前会话无 mwan4 操作权限，因此不显示服务启动、停止、重启及线路控制。"
+
+msgid "Service state"
+msgstr "服务状态"
+
+msgid "Set hysteresis and optional latency/loss thresholds for this WAN link."
+msgstr "设置此 WAN 线路的状态切换迟滞，以及可选的延迟和丢包率门槛。"
+
+msgid "Settings are not written until you apply these pending changes."
+msgstr "应用待处理更改前，设置不会写入。"
+
+msgid "Settings are stored in /etc/config/mwan4; LuCI does not write sysctl or iproute2 state directly. The mwan4 service applies them on save/apply and removes only endpoint IDs it previously created."
+msgstr "设置保存在 /etc/config/mwan4；LuCI 不直接写入 sysctl 或 iproute2 状态。保存并应用时由 mwan4 服务生效，且只删除自身创建的端点 ID。"
+
+msgid "Setup needed"
+msgstr "需要配置"
+
+msgid "Show configured WAN metadata, tracking status, route-table ownership, and tunnel classification for each mwan4 interface."
+msgstr "显示每个 mwan4 接口的 WAN 元数据、检测状态、路由表归属和隧道分类。"
+
+msgid "Show how latency, packet loss, hysteresis, and degraded states influence route selection."
+msgstr "显示延迟、丢包率、迟滞和性能下降状态如何影响路由选择。"
+
+msgid "Show live ip rule lines that steer marked traffic into mwan4-owned routing tables."
+msgstr "显示将标记流量引导至 mwan4 管理路由表的实时 ip rule 规则。"
+
+msgid "Show mwan4 service instances and tracker process coverage reported by procd."
+msgstr "显示 procd 报告的 mwan4 服务实例和检测进程覆盖情况。"
+
+msgid "Show raw response"
+msgstr "显示原始响应"
+
+msgid "Show route lines copied or inspected by mwan4 before policy route generation."
+msgstr "显示生成策略路由前 mwan4 复制或检查的路由条目。"
+
+msgid "Show the tuple, matched policy, selected WAN, firewall mark, route table, and fallback behavior for a policy decision."
+msgstr "显示策略决策的流量参数、匹配规则、所选 WAN、防火墙标记、路由表和回退行为。"
+
+msgid "Show tunnel metadata, endpoint underlay routes, recursion risk, policy strategy, and data-plane reachability."
+msgstr "显示隧道元数据、端点底层路径、递归风险、策略及数据平面连通性。"
+
+msgid "Signal address"
+msgstr "通告地址"
+
+msgid "Signal port"
+msgstr "通告端口"
+
+msgid "Skipped"
+msgstr "已跳过"
+
+msgid "Skipped policies and trace"
+msgstr "跳过的规则及跟踪记录"
+
+msgid "Some nft rules reference counters that were not reported by nft list counters."
+msgstr "部分 nft 规则引用了 nft list counters 未报告的计数器。"
+
+msgid "Source"
+msgstr "来源"
+
+msgid "Source address"
+msgstr "源地址"
+
+msgid "Source port"
+msgstr "源端口"
+
+msgid "Source ports"
+msgstr "源端口"
+
+msgid "Source routing"
+msgstr "源地址路由"
+
+msgid "Source routing enabled"
+msgstr "源地址路由已启用"
+
+msgid "Stable MPTCP endpoint ID. Required for safe mwan4 ownership and cleanup."
+msgstr "固定 MPTCP 端点 ID，用于 mwan4 安全管理和清理。"
+
+msgid "Stable interface ID"
+msgstr "固定接口 ID"
+
+msgid "Standard policy routing"
+msgstr "标准策略路由"
+
+msgid "Start"
+msgstr "启动"
+
+msgid "Start MultiWAN 4 service"
+msgstr "启动 MWAN4 服务"
+
+msgid "Start with reliability-first failover. You can switch to load balancing or custom paths later."
+msgstr "先配置可靠性优先的故障切换，之后可改为负载均衡或自定义路径。"
+
+msgid "Start with the source, protocol, or ingress interface."
+msgstr "先设置源地址、协议或入站接口。"
+
+msgid "Start with this guided path."
+msgstr "按此向导开始配置。"
+
+msgid "State"
+msgstr "状态"
+
+msgid "Status"
+msgstr "状态"
+
+msgid "Sticky source sessions"
+msgstr "源地址会话保持"
+
+msgid "Sticky source sessions for %ss"
+msgstr "源地址会话保持 %s 秒"
+
+msgid "Sticky timeout seconds"
+msgstr "会话保持超时（秒）"
+
+msgid "Stop"
+msgstr "停止"
+
+msgid "Stop MultiWAN 4 service"
+msgstr "停止 MWAN4 服务"
+
+msgid "Strategies"
+msgstr "分流策略"
+
+msgid "Strategies combine paths for failover or load balancing: the lowest healthy metric wins, equal metrics are balanced by weight."
+msgstr "策略将路径组合用于故障切换或负载均衡：优先使用健康路径中最低的跃点值，相同跃点值按权重分配。"
+
+msgid "Strategy"
+msgstr "策略"
+
+msgid "Strategy override"
+msgstr "策略覆盖"
+
+msgid "Strategy target helper"
+msgstr "策略目标辅助程序"
+
+msgid "Strategy that should carry tunnel endpoint traffic. Keep this on physical WAN routes to avoid recursion."
+msgstr "承载隧道端点流量的策略；应使用物理 WAN 路径以避免路由递归。"
+
+msgid "Subflow limit"
+msgstr "子流上限"
+
+msgid "Successes before up"
+msgstr "判定上线所需成功次数"
+
+msgid "Summary"
+msgstr "概览"
+
+msgid "Supported"
+msgstr "支持"
+
+msgid "Supported-interface helper"
+msgstr "支持接口辅助程序"
+
+msgid "Syslog priority used for logged mwan4 policy matches and service messages."
+msgstr "mwan4 策略匹配和服务日志使用的系统日志优先级。"
+
+msgid "TCP"
+msgstr "TCP"
+
+msgid "TCP probe"
+msgstr "TCP 探测"
+
+msgid "Table"
+msgstr "路由表"
+
+msgid "Table selected for matching packets"
+msgstr "匹配数据包使用的路由表"
+
+msgid "Take WAN link %s down"
+msgstr "将 WAN 线路 %s 移出路由"
+
+msgid "Target"
+msgstr "目标"
+
+msgid "Targets"
+msgstr "检测目标"
+
+msgid "Targets currently failing"
+msgstr "当前失败的检测目标"
+
+msgid "Targets reporting latency or packet loss"
+msgstr "报告延迟或丢包率的目标"
+
+msgid "Targets sampled by the selected probe method."
+msgstr "由所选探测方式采样的目标。"
+
+msgid "Terminal behavior"
+msgstr "最终处理行为"
+
+msgid "The first policy that accepted the tuple"
+msgstr "首条接受此流量参数的规则"
+
+msgid "The saved policy may be correct, but current enforcement cannot be confirmed from this page yet."
+msgstr "已保存的策略可能正确，但此页面尚无法确认当前是否生效。"
+
+msgid "The underlay strategy field accepts existing mwan4 strategies so diagnostics can check endpoint recursion against physical WAN paths."
+msgstr "底层传输策略可选择已有 mwan4 策略，供诊断对照物理 WAN 路径检查端点递归。"
+
+msgid "These global controls affect every generated rule, mark, table lookup, and integration with PBR or VRF routing domains."
+msgstr "这些全局设置影响全部生成的规则、标记、路由表查询，以及与 PBR 或 VRF 路由域的集成。"
+
+msgid "These settings affect every strategy, path, generated default, and traffic exception."
+msgstr "这些设置影响全部策略、路径、生成的默认规则和流量例外规则。"
+
+msgid "This action requires the luci-app-mwan4 advanced ACL and backend support for the requested action."
+msgstr "此操作需要 luci-app-mwan4 高级权限及后端相应支持。"
+
+msgid "This diagnostic section is shown as structured key/value rows. Open the raw response only when support needs the original RPC payload."
+msgstr "此诊断部分以键值表显示；需要原始 RPC 数据协助排查时，可打开原始响应。"
+
+msgid "This is an exception to the default failover/load-balance behavior."
+msgstr "此规则用于覆盖默认的故障切换或负载均衡行为。"
+
+msgid "This session can view mwan4 status but does not have permission for these controls."
+msgstr "当前会话可查看 mwan4 状态，但无这些操作权限。"
+
+msgid "This will add a tracked WAN link before it is written to mwan4."
+msgstr "将添加受健康检测的 WAN 线路，应用后写入 mwan4。"
+
+msgid "This will add a traffic exception before it is saved and applied."
+msgstr "将添加流量例外规则，等待保存并应用。"
+
+msgid "This will remove the WAN link and generated paths that reference it."
+msgstr "将删除此 WAN 线路及引用它的自动生成路径。"
+
+msgid "This will remove the traffic exception after you apply the pending change."
+msgstr "应用待处理更改后将删除此流量例外规则。"
+
+msgid "This will replace generated paths with a primary WAN link failover order."
+msgstr "将按主用 WAN 线路的故障切换顺序替换自动生成的路径。"
+
+msgid "This will replace generated paths with equal-priority load balancing."
+msgstr "将以相同优先级的负载均衡配置替换自动生成的路径。"
+
+msgid "This will update WAN link health checks before it is written to mwan4."
+msgstr "将更新 WAN 线路健康检测，应用后写入 mwan4。"
+
+msgid "This will update global firewall and routing behavior before it is written to mwan4."
+msgstr "将更新全局防火墙与路由行为，应用后写入 mwan4。"
+
+msgid "This will update the traffic exception before it is saved and applied."
+msgstr "将更新流量例外规则，等待保存并应用。"
+
+msgid "Throughput first"
+msgstr "吞吐量优先"
+
+msgid "Throughput-first routing"
+msgstr "吞吐量优先分流"
+
+msgid "Total"
+msgstr "合计"
+
+msgid "Total counters"
+msgstr "计数器总数"
+
+msgid "Track targets"
+msgstr "检测目标"
+
+msgid "Tracker"
+msgstr "检测进程"
+
+msgid "Tracker instances"
+msgstr "检测进程实例"
+
+msgid "Tracker state"
+msgstr "检测进程状态"
+
+msgid "Trackers"
+msgstr "检测进程"
+
+msgid "Traffic"
+msgstr "流量"
+
+msgid "Traffic coming from"
+msgstr "流量来源"
+
+msgid "Traffic exception"
+msgstr "流量例外规则"
+
+msgid "Traffic exception builder"
+msgstr "流量例外规则配置"
+
+msgid "Traffic exception name"
+msgstr "流量例外规则名称"
+
+msgid "Traffic exception summary"
+msgstr "流量例外规则摘要"
+
+msgid "Traffic exception: %s"
+msgstr "流量例外规则：%s"
+
+msgid "Traffic exceptions"
+msgstr "流量例外规则"
+
+msgid "Traffic follows the main routing table until a WAN link and routing mode are configured."
+msgstr "配置 WAN 线路和分流模式前，流量使用主路由表。"
+
+msgid "Traffic match"
+msgstr "流量匹配条件"
+
+msgid "Traffic may bypass mwan4"
+msgstr "流量可能绕过 mwan4"
+
+msgid "Traffic may continue to follow the main routing table instead of a mwan4 default policy."
+msgstr "流量可能继续使用主路由表，而未使用 mwan4 默认规则。"
+
+msgid "Traffic policies"
+msgstr "流量规则"
+
+msgid "Traffic policies are evaluated from top to bottom and choose a policy path, the main routing table, or a fail-closed action for matching traffic."
+msgstr "流量规则从上到下匹配，为匹配流量指定策略路径、主路由表或故障阻断动作。"
+
+msgid "Traffic policies for IPv4"
+msgstr "IPv4 流量规则"
+
+msgid "Traffic policies for IPv6"
+msgstr "IPv6 流量规则"
+
+msgid "Traffic policy routing"
+msgstr "流量策略路由"
+
+msgid "Transport"
+msgstr "传输方式"
+
+msgid "Tune path weights, priorities, SLA behavior, and reject/drop handling manually."
+msgstr "手动调整路径权重、优先级、质量门槛，以及拒绝或丢弃流量的行为。"
+
+msgid "Tune probe timing carefully; lower values react faster but can flap unstable links."
+msgstr "谨慎调整探测时间：较小值反应更快，但可能造成不稳定线路频繁切换。"
+
+msgid "Tunnel"
+msgstr "隧道"
+
+msgid "Tunnel addresses"
+msgstr "隧道地址"
+
+msgid "Tunnel diagnostics"
+msgstr "隧道诊断"
+
+msgid "Tunnel endpoint host"
+msgstr "隧道端点主机"
+
+msgid "Tunnel endpoint host-route exemptions were applied."
+msgstr "已应用隧道端点主机路由豁免。"
+
+msgid "Tunnel endpoint port"
+msgstr "隧道端点端口"
+
+msgid "Tunnel interface"
+msgstr "隧道接口"
+
+msgid "Tunnel metadata"
+msgstr "隧道元数据"
+
+msgid "Tunnel metadata and external UCI sections were updated."
+msgstr "隧道元数据及外部 UCI 配置段已更新。"
+
+msgid "Tunnel path checks"
+msgstr "隧道路径检查"
+
+msgid "Tunnel steering"
+msgstr "隧道流量引导"
+
+msgid "Tunnel underlay strategy"
+msgstr "隧道底层传输策略"
+
+msgid "Tunnels"
+msgstr "隧道"
+
+msgid "Tunnels and underlay"
+msgstr "隧道与底层传输"
+
+msgid "UDP"
+msgstr "UDP"
+
+msgid "UDP probe"
+msgstr "UDP 探测"
+
+msgid "Unavailable"
+msgstr "不可用"
+
+msgid "Underlay"
+msgstr "底层传输"
+
+msgid "Underlay WANs"
+msgstr "底层 WAN 线路"
+
+msgid "Underlay interfaces"
+msgstr "底层传输接口"
+
+msgid "Underlay recursion or endpoint route warnings"
+msgstr "底层路由递归或端点路由警告"
+
+msgid "Underlay strategies"
+msgstr "底层传输策略"
+
+msgid "Underlay strategy"
+msgstr "底层传输策略"
+
+msgid "Underlay validation"
+msgstr "底层传输校验"
+
+msgid "Unknown"
+msgstr "未知"
+
+msgid "Unknown WAN"
+msgstr "未知 WAN"
+
+msgid "Unknown feature"
+msgstr "未知功能"
+
+msgid "Unknown interface"
+msgstr "未知接口"
+
+msgid "Unknown item"
+msgstr "未知项目"
+
+msgid "Unknown object"
+msgstr "未知对象"
+
+msgid "Unknown owner"
+msgstr "未知管理方"
+
+msgid "Unknown package"
+msgstr "未知软件包"
+
+msgid "Unknown peer"
+msgstr "未知对端"
+
+msgid "Unknown runtime state"
+msgstr "运行状态未知"
+
+msgid "Unknown target"
+msgstr "未知目标"
+
+msgid "Unknown tunnel"
+msgstr "未知隧道"
+
+msgid "Unnamed check"
+msgstr "未命名检查"
+
+msgid "Unnamed interface"
+msgstr "未命名接口"
+
+msgid "Unnamed limit"
+msgstr "未命名上限"
+
+msgid "Unnamed option"
+msgstr "未命名选项"
+
+msgid "Unnamed policy"
+msgstr "未命名规则"
+
+msgid "Unnamed step"
+msgstr "未命名步骤"
+
+msgid "Unnamed tunnel"
+msgstr "未命名隧道"
+
+msgid "Unsupported"
+msgstr "不支持"
+
+msgid "Up"
+msgstr "加入路由"
+
+msgid "Update luci-app-pbr configuration so PBR can target mwan4 strategies without mark or interface drift."
+msgstr "更新 luci-app-pbr 配置，使 PBR 可使用 mwan4 策略，避免标记或接口不一致。"
+
+msgid "Use 0.0.0.0/0 or ::/0 only when you really want a catch-all traffic policy."
+msgstr "仅在需要匹配全部流量时使用 0.0.0.0/0 或 ::/0。"
+
+msgid "Use HTTPS requests for httping probes."
+msgstr "httping 探测使用 HTTPS 请求。"
+
+msgid "Use a TCP port from 1 to 65535."
+msgstr "使用 1 至 65535 的 TCP 端口。"
+
+msgid "Use a TCP/UDP port from 1 to 65535."
+msgstr "使用 1 至 65535 的 TCP/UDP 端口。"
+
+msgid "Use a positive decimal mark or hexadecimal mark such as 0x100."
+msgstr "填写正十进制标记或十六进制标记，例如 0x100。"
+
+msgid "Use a positive decimal value or hexadecimal value such as 0x3F00."
+msgstr "填写正十进制数或十六进制数，例如 0x3F00。"
+
+msgid "Use a positive integer, or leave this empty for automatic assignment."
+msgstr "填写正整数，或留空自动分配。"
+
+msgid "Use a positive sticky timeout in seconds."
+msgstr "会话保持超时请填写正整数秒数。"
+
+msgid "Use a simple nft set name with letters, numbers, dots, dashes, or underscores."
+msgstr "填写只包含字母、数字、点、连字符或下划线的 nft 集合名称。"
+
+msgid "Use a stable endpoint ID from 1 to 255 so mwan4 can remove only endpoints it created."
+msgstr "使用 1 至 255 的固定端点 ID，使 mwan4 仅删除自身创建的端点。"
+
+msgid "Use a stable endpoint ID from 1 to 255."
+msgstr "使用 1 至 255 的固定端点 ID。"
+
+msgid "Use a value from 0 to 65535."
+msgstr "使用 0 至 65535 的数值。"
+
+msgid "Use default behavior"
+msgstr "使用默认行为"
+
+msgid "Use diagnostics to confirm whether the service and trackers are running."
+msgstr "通过诊断确认服务和检测进程是否运行。"
+
+msgid "Use failover"
+msgstr "使用故障切换"
+
+msgid "Use latency/loss SLA thresholds"
+msgstr "启用延迟和丢包率质量门槛"
+
+msgid "Use letters, numbers, and underscores for the traffic exception name."
+msgstr "流量例外规则名称只使用字母、数字和下划线。"
+
+msgid "Use load balancing"
+msgstr "使用负载均衡"
+
+msgid "Use main routing table"
+msgstr "使用主路由表"
+
+msgid "Use one primary WAN link and fail over when health checks fail."
+msgstr "使用一条主用 WAN 线路，健康检测失败时切换至备用线路。"
+
+msgid "Use ports from 1-65535, ranges such as 1000-2000, or comma-separated lists."
+msgstr "填写 1-65535 的端口、1000-2000 等范围，或逗号分隔的列表。"
+
+msgid "Use reliability first"
+msgstr "使用可靠性优先"
+
+msgid "Use source ports from 1-65535, ranges such as 1000-2000, or comma-separated lists."
+msgstr "填写 1-65535 的源端口、1000-2000 等范围，或逗号分隔的列表。"
+
+msgid "Use the Strategies tab when manual path weighting is needed."
+msgstr "需要手动配置路径权重时，请使用“分流策略”标签页。"
+
+msgid "Use these fields for tunnel metadata, explicit routing ownership, probe helpers, SLA thresholds, and source-routing safety."
+msgstr "使用这些字段设置隧道元数据、路由归属、探测辅助程序、质量门槛及源地址路由安全参数。"
+
+msgid "Use this page to manage mwan4-owned MPTCP kernel/sysctl state, subflow limits, and per-WAN endpoint role definitions without storing secrets."
+msgstr "在此管理由 mwan4 控制的 MPTCP 内核/sysctl 状态、子流上限和各 WAN 端点角色；此页面不保存密钥。"
+
+msgid "Use throughput first"
+msgstr "使用吞吐量优先"
+
+msgid "Used only when sticky source sessions are enabled."
+msgstr "仅在启用源地址会话保持时使用。"
+
+msgid "VRF"
+msgstr "VRF"
+
+msgid "VRF and mwan4 ownership metadata were updated."
+msgstr "VRF 和 mwan4 归属元数据已更新。"
+
+msgid "VRF and ownership"
+msgstr "VRF 与归属"
+
+msgid "VRF and table map"
+msgstr "VRF 与路由表对应关系"
+
+msgid "VRF devices"
+msgstr "VRF 设备"
+
+msgid "VRF interface bindings"
+msgstr "VRF 接口绑定"
+
+msgid "VRF links reported by iproute2"
+msgstr "iproute2 报告的 VRF 链路"
+
+msgid "VRF live checks that need attention"
+msgstr "需要处理的 VRF 实时检查"
+
+msgid "VRF live validation"
+msgstr "VRF 实时校验"
+
+msgid "VRF name"
+msgstr "VRF 名称"
+
+msgid "VRF routing rules"
+msgstr "VRF 路由规则"
+
+msgid "VRF table routes"
+msgstr "VRF 路由表中的路由"
+
+msgid "VRF visibility"
+msgstr "VRF 状态读取"
+
+msgid "VRF, BFD, and probes"
+msgstr "VRF、BFD 与探测"
+
+msgid "VRFs"
+msgstr "VRF"
+
+msgid "Validate kernel support, endpoint roles, subflow limits, and source-route alignment before expecting multipath sessions to use every WAN."
+msgstr "使用所有 WAN 建立多路径会话前，请检查内核支持、端点角色、子流上限及源地址路由对齐情况。"
+
+msgid "Validation failures"
+msgstr "校验失败"
+
+msgid "Value"
+msgstr "值"
+
+msgid "Verify generated mwan4 nftables chains and installed rule files before debugging policy hits."
+msgstr "排查规则命中前，请检查生成的 mwan4 nftables 链及已安装规则文件。"
+
+msgid "Verify optional package bundles needed for advanced probes, WireGuard, tunnels, PBR, VRF, and FRR/BFD."
+msgstr "检查高级探测、WireGuard、隧道、PBR、VRF 和 FRR/BFD 所需的可选组件包。"
+
+msgid "Version"
+msgstr "版本"
+
+msgid "WAN"
+msgstr "WAN"
+
+msgid "WAN Links"
+msgstr "WAN 线路"
+
+msgid "WAN endpoint roles"
+msgstr "WAN 端点角色"
+
+msgid "WAN health can be tracked, but no generated strategy tells traffic which path to use."
+msgstr "WAN 健康状态可被检测，但尚无自动生成的策略指定流量路径。"
+
+msgid "WAN health matrix"
+msgstr "WAN 健康状态"
+
+msgid "WAN link"
+msgstr "WAN 线路"
+
+msgid "WAN link diagnostics"
+msgstr "WAN 线路诊断"
+
+msgid "WAN link ownership"
+msgstr "WAN 线路归属"
+
+msgid "WAN link used by this path."
+msgstr "此路径使用的 WAN 线路。"
+
+msgid "WAN link whose source address and device should own this endpoint."
+msgstr "此端点所属的 WAN 线路，使用其源地址和设备。"
+
+msgid "WAN link: %s"
+msgstr "WAN 线路：%s"
+
+msgid "WAN links"
+msgstr "WAN 线路"
+
+msgid "WAN links are configured; the next step is choosing how healthy links should carry traffic."
+msgstr "WAN 线路已配置，下一步选择健康线路如何承载流量。"
+
+msgid "WAN links map OpenWrt network interfaces to health checks and SLA thresholds."
+msgstr "WAN 线路将 OpenWrt 网络接口关联到健康检测和质量门槛。"
+
+msgid "WAN links with quality configuration"
+msgstr "配置了质量门槛的 WAN 线路"
+
+msgid "WAN order"
+msgstr "WAN 优先顺序"
+
+msgid "WAN workspace"
+msgstr "WAN 线路概览"
+
+msgid "Waiting"
+msgstr "等待中"
+
+msgid "Waiting for live data"
+msgstr "等待实时数据"
+
+msgid "Warn when the tunnel endpoint would be routed through the tunnel itself."
+msgstr "隧道端点可能经隧道自身访问时发出警告。"
+
+msgid "Warning"
+msgstr "警告"
+
+msgid "Warnings"
+msgstr "警告"
+
+msgid "Watch the WAN workspace, or add traffic exceptions only for traffic that needs a special path."
+msgstr "查看 WAN 线路状态；仅为需要特殊路径的流量添加例外规则。"
+
+msgid "Weight"
+msgstr "权重"
+
+msgid "What should I check next?"
+msgstr "接下来应检查什么？"
+
+msgid "When no path is usable"
+msgstr "无可用路径时"
+
+msgid "Whether endpoint traffic can loop into the tunnel"
+msgstr "端点流量是否可能循环进入隧道"
+
+msgid "Whether marked IPv6 has a matching route table"
+msgstr "标记的 IPv6 流量是否有对应路由表"
+
+msgid "WireGuard"
+msgstr "WireGuard"
+
+msgid "WireGuard peer public key"
+msgstr "WireGuard 对端公钥"
+
+msgid "WireGuard private key"
+msgstr "WireGuard 私钥"
+
+msgid "WireGuard public key"
+msgstr "WireGuard 公钥"
+
+msgid "Without a matching default policy, traffic can bypass the prepared strategies."
+msgstr "没有匹配的默认规则时，流量可能绕过已配置的策略。"
+
+msgid "Work from left to right: add tracked WAN links, choose a routing mode, then add traffic exceptions only for traffic that needs a special path."
+msgstr "依次添加受检测的 WAN 线路、选择分流模式，再为需要特殊路径的流量添加例外规则。"
+
+msgid "Write policy matches to the system log when global logging permits it."
+msgstr "全局日志设置允许时，将规则匹配结果写入系统日志。"
+
+msgid "Writes net.mptcp.enabled through the mwan4 backend when configuration is applied."
+msgstr "应用配置时通过 mwan4 后端写入 net.mptcp.enabled。"
+
+msgid "Yes"
+msgstr "是"
+
+msgid "active"
+msgstr "检测中"
+
+msgid "any"
+msgstr "任意"
+
+msgid "apk or opkg detected by backend diagnostics"
+msgstr "后端诊断检测到的 apk 或 opkg"
+
+msgid "auto from WAN source address"
+msgstr "根据 WAN 源地址自动获取"
+
+msgid "automatic"
+msgstr "自动"
+
+msgid "configured"
+msgstr "已配置"
+
+msgid "custom strategy"
+msgstr "自定义策略"
+
+msgid "derived from mask"
+msgstr "根据掩码生成"
+
+msgid "disabled"
+msgstr "已禁用"
+
+msgid "down"
+msgstr "失败"
+
+msgid "down %s / up %s, reliability %s"
+msgstr "失败 %s 次 / 成功 %s 次，需通过 %s 个目标"
+
+msgid "fail %sms/%s%%, recover %sms/%s%%"
+msgstr "异常 %s 毫秒/%s%%，恢复 %s 毫秒/%s%%"
+
+msgid "fail closed (drop traffic)"
+msgstr "故障时丢弃流量"
+
+msgid "fail closed (reject traffic)"
+msgstr "故障时拒绝流量"
+
+msgid "failover strategy"
+msgstr "故障切换策略"
+
+msgid "from interface %s"
+msgstr "来自接口 %s"
+
+msgid "from source %s"
+msgstr "来自源地址 %s"
+
+msgid "ip rule preferences reserved by mwan4"
+msgstr "mwan4 保留的 ip rule 优先级"
+
+msgid "kernel default"
+msgstr "内核默认值"
+
+msgid "l3mdev routing rules"
+msgstr "l3mdev 路由规则"
+
+msgid "l3mdev rules"
+msgstr "l3mdev 规则"
+
+msgid "load-balancing strategy"
+msgstr "负载均衡策略"
+
+msgid "main routing table"
+msgstr "主路由表"
+
+msgid "mwan4 WAN link"
+msgstr "mwan4 WAN 线路"
+
+msgid "mwan4 applies these values during service reload. Leave limits empty to keep the current kernel defaults."
+msgstr "mwan4 在重新加载服务时应用这些值；上限留空则保留当前内核默认值。"
+
+msgid "mwan4 enabled WAN"
+msgstr "mwan4 已启用 WAN"
+
+msgid "mwan4 has WAN links, routing defaults, optional exceptions, and clean runtime status."
+msgstr "WAN 线路、默认路由及可选例外规则已配置，mwan4 运行正常。"
+
+msgid "mwan4 has link definitions, but none are enabled for routing decisions."
+msgstr "mwan4 已有线路配置，但未启用任何线路参与路由。"
+
+msgid "mwan4 is configured but runtime state is incomplete. Failover strategies and traffic policies may not be enforced."
+msgstr "mwan4 已配置，但运行状态不完整；故障切换策略和流量规则可能未生效。"
+
+msgid "mwan4 is configured, but LuCI has not received per-link runtime health data yet."
+msgstr "mwan4 已配置，但 LuCI 尚未收到各线路的实时健康数据。"
+
+msgid "mwan4 needs at least one tracked network interface before it can judge health or route traffic."
+msgstr "mwan4 至少需要一个受检测的网络接口，才能判断健康状态和进行流量分配。"
+
+msgid "mwan4 nft include files"
+msgstr "mwan4 nft 引用文件"
+
+msgid "mwan4 should avoid unhealthy links, but available capacity and redundancy are reduced."
+msgstr "mwan4 会避开异常线路，但可用容量和冗余能力已降低。"
+
+msgid "mwan4 strategy: %s"
+msgstr "mwan4 策略：%s"
+
+msgid "mwan4 validation runs before the pending change is applied."
+msgstr "应用待处理更改前会运行 mwan4 配置校验。"
+
+msgid "mwan4 will prefer the primary WAN link and move down the list when health checks fail."
+msgstr "mwan4 优先使用主用 WAN 线路，健康检测失败时按列表顺序切换。"
+
+msgid "mwan4 will use equal-priority paths across all enabled healthy WAN links."
+msgstr "mwan4 将在所有已启用的健康 WAN 线路之间使用相同优先级的路径。"
+
+msgid "mwan4-owned endpoint definitions saved in UCI."
+msgstr "保存在 UCI 中、由 mwan4 管理的端点定义。"
+
+msgid "nft chains"
+msgstr "nft 链"
+
+msgid "nft counters were reset. Running Counters again..."
+msgstr "nft 计数器已重置，正在重新运行计数器诊断…"
+
+msgid "nft rules that reference named counters"
+msgstr "引用命名计数器的 nft 规则"
+
+msgid "nftables"
+msgstr "nftables"
+
+msgid "nftables runtime"
+msgstr "nftables 运行状态"
+
+msgid "nftables table inspected by mwan4"
+msgstr "mwan4 检查的 nftables 表"
+
+msgid "not measured"
+msgstr "未测量"
+
+msgid "not set"
+msgstr "未设置"
+
+msgid "offline"
+msgstr "离线"
+
+msgid "online"
+msgstr "在线"
+
+msgid "optional set name"
+msgstr "可选集合名称"
+
+msgid "optional source address"
+msgstr "可选源地址"
+
+msgid "paused"
+msgstr "已暂停"
+
+msgid "pbr supported_interface"
+msgstr "pbr supported_interface"
+
+msgid "peer public key"
+msgstr "对端公钥"
+
+msgid "pending"
+msgstr "待处理"
+
+msgid "physical_wan_strategy"
+msgstr "physical_wan_strategy"
+
+msgid "port %s"
+msgstr "端口 %s"
+
+msgid "same as stable ID"
+msgstr "与固定接口 ID 相同"
+
+msgid "signal, subflow, backup, and fullmesh flags"
+msgstr "地址通告、子流、备用及全网格标志"
+
+msgid "signal, subflow, backup, and fullmesh flags."
+msgstr "地址通告、子流、备用及全网格标志。"
+
+msgid "signal, subflow, backup, and fullmesh roles"
+msgstr "地址通告、子流、备用及全网格角色"
+
+msgid "skipped"
+msgstr "已跳过"
+
+msgid "source port %s"
+msgstr "源端口 %s"
+
+msgid "unknown"
+msgstr "未知"
+
+msgid "unmeasured"
+msgstr "未测量"
+
+msgid "up"
+msgstr "成功"
+
+msgid "wan_backup"
+msgstr "wan_backup"
+
+msgid "work_vpn"
+msgstr "work_vpn"

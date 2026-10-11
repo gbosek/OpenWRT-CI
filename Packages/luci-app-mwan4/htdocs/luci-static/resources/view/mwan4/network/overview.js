@@ -1520,7 +1520,7 @@ function renderFamilyStatePills(section, runtime) {
 		let item = runtimeFamilies[family] || {};
 		let state = item.health_state || item.status || (item.up ? 'online' : 'unknown');
 
-		return renderPill('%s: %s'.format(familyLabel(family), state), statusClass(state, item.up));
+		return renderPill('%s: %s'.format(familyLabel(family), mwan4Common.statusLabel(state)), statusClass(state, item.up));
 	}));
 }
 
@@ -1548,7 +1548,7 @@ function renderTargetSummary(section, runtime) {
 
 		rows.push(E('li', [
 			E('span', [ formatDisplayValue(target.ip, '-') ]),
-			E('span', [ formatDisplayValue(target.status, _('unknown')) ]),
+			E('span', [ mwan4Common.statusLabel(formatDisplayValue(target.status, 'unknown')) ]),
 			E('span', [ target.latency != null ? _('%d ms').format(target.latency) : '-' ]),
 			E('span', [ target.packetloss != null ? _('%d%%').format(target.packetloss) : '-' ])
 		]));
@@ -1597,8 +1597,8 @@ function renderWanRow(section, status) {
 			])
 		]),
 		E('td', [
-			renderPill(state, statusClass(state, runtime.up)),
-			E('small', [ formatDisplayValue(runtime.tracking || runtime.status, _('unknown')), runtime.up ? _(' / netifd up') : _(' / netifd down') ])
+			renderPill(mwan4Common.statusLabel(state), statusClass(state, runtime.up)),
+			E('small', [ mwan4Common.statusLabel(formatDisplayValue(runtime.tracking || runtime.status, 'unknown')), ' / ', runtime.up ? _('Network interface connected') : _('Network interface disconnected') ])
 		]),
 		E('td', [
 			E('strong', [ score ]),
