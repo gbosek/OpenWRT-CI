@@ -1,13 +1,7 @@
-# XG2010G port notes
+# XG2010G build notes
 
-Based on upstream `luanmuc/luci-app-airoha-npu` commit `5c6e9e079ad9ecb1446c674e964f797842675856`, with selected compatibility and reporting improvements from `rchen14b/luci-app-airoha-npu`.
+The `AIROHA` build selects only the Gemtek XG2010G profile. Its `luci-app-airoha-npu` source is synced from `naoki66/luci-app-airoha` commit `24441ffbbf69086745d5b6b7e09a187164f91f07`, package release `2.0.0-9`.
 
-- Keep upstream CPU, NPU, PPE, and Frame Engine RPC implementation and Chinese translation.
-- Use device-tree SoC detection and backend-provided overclock availability/range; restrict register writes to Gemtek XG2010G on AN7581.
-- Keep optional PPE and Frame Engine reads non-fatal so missing debugfs/register data does not blank the whole page.
-- Exclude Wi-Fi token, station, and radio monitoring; XG2010G is used as a wired optical terminal.
-- Remove board-specific physical LAN labels and show every PSE queue, including P3.
-- The XG2010G board DTS explicitly opts into the kernel direct-PLL CPU PM-domain path, adapted from the upstream fallback patch. The board OPP table advertises up to 1600 MHz; startup uses `ondemand` with a 1400 MHz ceiling, and the user may select up to 1600 MHz. Other boards retain the SMC path. This source is experimental and not flash-ready until hardware stability and thermal behavior are verified; the failed locally signed boot chain is not reused.
-- Do not grant the browser session direct `/dev/mem` access. CPU PLL programming is performed by the kernel CPU PM-domain driver; the root rpcd helper only sets the cpufreq maximum via sysfs.
-
-- Selectively merge upstream maintenance updates from `naoki66/luci-app-airoha` commit `c6b8878e4d440275892447be899ce0966a12d0b4`: executable-bit validation for startup scripts, bounded and logged CPU-setting application, safer RPC temporary files, cached NPU firmware-version lookup (written atomically under `/var/run`), and JSON escaping for RPC responses. Existing XG2010G PON topology and line-rate customizations remain intact.
+- The upstream package now exposes Frame Engine GDM/CDM/PSE counters. The Makefile selects the kernel `/dev/mem` and BusyBox `devmem` build options needed by those counters.
+- Optical module and PON status are provided by the separate `luci-app-pon-status` package in this firmware build.
+- CPU PLL behavior remains in the XG2010G kernel/DTS configuration. This LuCI package controls the CPU frequency ceiling through cpufreq sysfs; it does not expose direct PLL register writes.

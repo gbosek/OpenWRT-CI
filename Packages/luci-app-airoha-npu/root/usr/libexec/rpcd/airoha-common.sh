@@ -91,7 +91,7 @@ airoha_has_wifi() {
 # polled every few seconds, so the version is resolved once per boot and keyed
 # on the blob it came from. A blob that is not there yet is not cached - an
 # early call during boot must not pin "Unknown" for the rest of the uptime.
-airoha_npu_version_cache=/var/run/airoha-npu-version.cache
+airoha_npu_version_cache=/tmp/airoha-npu-version.cache
 
 airoha_npu_version() {
 	local firmware name version
@@ -117,16 +117,7 @@ airoha_npu_version() {
 
 	version=$(strings "$firmware" 2>/dev/null | grep -oE '([0-9]+\.[0-9]+\.[0-9]+-)?TLB[0-9.]+[-_v0-9]*' | head -1)
 	if [ -n "$version" ]; then
-		local cache_tmp
-		cache_tmp=$(mktemp "${airoha_npu_version_cache}.XXXXXX" 2>/dev/null) || cache_tmp=""
-		if [ -n "$cache_tmp" ]; then
-			if printf '%s\n%s\n' "$firmware" "$version" > "$cache_tmp" 2>/dev/null; then
-				chmod 0600 "$cache_tmp" 2>/dev/null
-				mv -f "$cache_tmp" "$airoha_npu_version_cache" 2>/dev/null || rm -f "$cache_tmp"
-			else
-				rm -f "$cache_tmp"
-			fi
-		fi
+		printf '%s\n%s\n' "$firmware" "$version" > "$airoha_npu_version_cache" 2>/dev/null
 	fi
 	printf '%s' "${version:-Unknown}"
 }
@@ -214,28 +205,12 @@ airoha_pon_mode_int() {
 
 # Negotiated PON mode name, "unknown" when unrecognised.
 airoha_pon_mode_name() {
-	local active
-	# The module parameter is the requested mode (often "auto"), not
-	# necessarily the mode currently negotiated with the OLT. Prefer the
-	# driver's active line mode whenever it is available.
-	active=$(awk '$1 == "active_mode:" { print $2; exit }' /sys/kernel/debug/airoha-xpon-pon0/line 2>/dev/null | tr 'A-Z' 'a-z')
-	case "$active" in
-		gpon|xgpon|xgspon|epon|epon-10g-1g|epon-10g-10g|10g-1g-epon|10g-10g-epon|epon-1g|1g-1g-epon|gpon-sym|turbo-epon|ngpon2-10g-10g|ngpon2-10g-2g|ngpon2-2g-2g)
-			case "$active" in
-				10g-1g-epon) active=epon-10g-1g ;;
-				10g-10g-epon) active=epon-10g-10g ;;
-				epon-1g) active=epon ;;
-			esac
-			echo "$active"
-			return 0
-			;;
-	esac
 	case "$(airoha_pon_mode_int)" in
 		0) echo auto ;;
 		1) echo gpon ;;
 		2) echo epon ;;
-		3) echo epon-10g-1g ;;
-		4) echo epon-10g-10g ;;
+		3) echo 10g-1g-epon ;;
+		4) echo 10g-10g-epon ;;
 		5) echo 1g-1g-epon ;;
 		6) echo xgpon ;;
 		7) echo xgspon ;;
@@ -258,8 +233,7 @@ airoha_pon_mode_name() {
 # PON line rates "<down_mbps> <up_mbps>", "0 0" when unknown. The kernel does
 # not expose line rates anywhere, so they are derived from the mode only.
 airoha_pon_rates() {
-	local mode="${1:-$(airoha_pon_mode_name)}"
-	case "$mode" in
+	case "$(airoha_pon_mode_name)" in
 		xgpon)          echo "10000 2500" ;;
 		xgspon)         echo "10000 10000" ;;
 		gpon)           echo "2488 1244" ;;
@@ -273,27 +247,6 @@ airoha_pon_rates() {
 		ngpon2-2g-2g)   echo "2000 2000" ;;
 		turbo-epon)     echo "2000 2000" ;;
 		*)              echo "0 0" ;;
-	esac
-}
-
-# Exact nominal line rates in bit/s for modes with a defined rate pair.
-# Keep the rounded down_mbps/up_mbps fields above for existing RPC consumers.
-airoha_pon_rates_bps() {
-	local mode="${1:-$(airoha_pon_mode_name)}"
-	case "$mode" in
-		xgpon) echo "9953280000 2488320000" ;;
-		xgspon) echo "9953280000 9953280000" ;;
-		gpon) echo "2488320000 1244160000" ;;
-		gpon-sym) echo "2488320000 2488320000" ;;
-		epon) echo "1250000000 1250000000" ;;
-		epon-10g-1g|10g-1g-epon) echo "10000000000 1000000000" ;;
-		epon-10g-10g|10g-10g-epon) echo "10000000000 10000000000" ;;
-		1g-1g-epon) echo "1000000000 1000000000" ;;
-		ngpon2-10g-10g) echo "10000000000 10000000000" ;;
-		ngpon2-10g-2g) echo "10000000000 2000000000" ;;
-		ngpon2-2g-2g) echo "2000000000 2000000000" ;;
-		turbo-epon) echo "2000000000 2000000000" ;;
-		*) echo "0 0" ;;
 	esac
 }
 
@@ -486,25 +439,20 @@ airoha_port_topology_json() {
 	local has_pon pon_json
 	has_pon=$(airoha_pon_present)
 	if [ "$has_pon" = "1" ]; then
-		local pmode pname pdown pup pdown_bps pup_bps plos ponu pdev rates rates_bps
+		local pmode pname pdown pup plos ponu pdev rates
+		rates=$(airoha_pon_rates)
 		pmode=$(airoha_pon_mode_int)
 		case "$pmode" in ''|*[!0-9]*) pmode=null ;; esac
 		pname=$(airoha_pon_mode_name)
-		rates=$(airoha_pon_rates "$pname")
-		rates_bps=$(airoha_pon_rates_bps "$pname")
 		pdown=$(printf '%s' "$rates" | awk '{print $1}')
 		pup=$(printf '%s' "$rates" | awk '{print $2}')
-		pdown_bps=$(printf '%s' "$rates_bps" | awk '{print $1}')
-		pup_bps=$(printf '%s' "$rates_bps" | awk '{print $2}')
 		case "$pdown" in ''|*[!0-9]*) pdown=0 ;; esac
 		case "$pup" in ''|*[!0-9]*) pup=0 ;; esac
-		case "$pdown_bps" in ''|*[!0-9]*) pdown_bps=0 ;; esac
-		case "$pup_bps" in ''|*[!0-9]*) pup_bps=0 ;; esac
 		plos=$(airoha_pon_los)
 		case "$plos" in ''|*[!0-9]*) plos=null ;; esac
 		ponu=$(airoha_pon_onu_state)
 		pdev=$(airoha_pon_netdev)
-		pon_json="{\"present\":${has_pon},\"mode\":${pmode},\"mode_name\":\"$(_airoha_json_str "$pname")\",\"down_mbps\":${pdown},\"up_mbps\":${pup},\"down_bps\":${pdown_bps},\"up_bps\":${pup_bps},\"los\":${plos},\"onu_state\":\"$(_airoha_json_str "$ponu")\",\"netdev\":\"$(_airoha_json_str "$pdev")\"}"
+		pon_json="{\"present\":${has_pon},\"mode\":${pmode},\"mode_name\":\"$(_airoha_json_str "$pname")\",\"down_mbps\":${pdown},\"up_mbps\":${pup},\"los\":${plos},\"onu_state\":\"$(_airoha_json_str "$ponu")\",\"netdev\":\"$(_airoha_json_str "$pdev")\"}"
 	else
 		pon_json="null"
 	fi

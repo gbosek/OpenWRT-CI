@@ -24,6 +24,7 @@ var callSetApModeOffload = rpc.declare({ object: 'luci.airoha_npu', method: 'set
 var callGetDeviceMode = rpc.declare({ object: 'luci.airoha_npu', method: 'getDeviceMode' });
 var callGetTopology = rpc.declare({ object: 'luci.airoha_npu', method: 'getTopology' });
 var callGetWifiStats = rpc.declare({ object: 'luci.airoha_npu', method: 'getWifiStats' });
+var callFrameEngine = rpc.declare({ object: 'luci.airoha_npu', method: 'getFrameEngine' });
 var callSetCpuSettings = rpc.declare({ object: 'luci.airoha_npu', method: 'setCpuSettings', params: ['governor', 'freq'] });
 
 var CPU_MIN_FREQ_KHZ = 500000;
@@ -68,7 +69,12 @@ function getTxQueue(ti, b) {
  * to the topology-derived label. Technical tokens (GDM1, the netdev names)
  * stay untranslated, exactly as the file already treats them. */
 
-/* Human-readable role/mode summary for one topology port. */
+/* Human-readable role/mode summary for one topology port. The role tokens
+ * (WAN / LAN / PON) are deliberately passed through untranslated like the
+ * other technical tokens below: they are standard abbreviations, and every
+ * catalog on the device has its own idea of what a bare "LAN" means
+ * (base.lmo maps it to a bandwidth word, some vendor catalogs to
+ * "LAN 流量"), so translating them only produces wrong labels. */
 function portLabel(p) {
 	p = p || {};
 	var role = String(p.role || '').toLowerCase();
@@ -76,8 +82,8 @@ function portLabel(p) {
 	var netdev = String(p.netdev || '');
 	var parts = [];
 	if (mode === 'internal' || !netdev) parts.push(_('Internal Switch'));
-	else if (role === 'wan') parts.push(_('WAN'));
-	else if (role === 'lan') parts.push(_('LAN'));
+	else if (role === 'wan') parts.push('WAN');
+	else if (role === 'lan') parts.push('LAN');
 	else parts.push(_('No netdev'));
 	if (mode && mode !== 'internal') parts.push(mode.toUpperCase());
 	if (netdev) parts.push(netdev);
@@ -601,40 +607,6 @@ function updateOffloadControl(inputId, badgeId, rowId, enabled, blocked) {
 	}
 }
 
-function ponModeName(mode) {
-	var labels = {
-		'xgpon': 'XG-PON', 'xgspon': 'XGS-PON',
-		'epon-10g-1g': '10G-EPON 10G/1G', '10g-1g-epon': '10G-EPON 10G/1G',
-		'epon-10g-10g': '10G-EPON 10G/10G', '10g-10g-epon': '10G-EPON 10G/10G',
-		'ngpon2-10g-10g': 'NG-PON2 10G/10G', 'ngpon2-10g-2g': 'NG-PON2 10G/2G',
-		'ngpon2-2g-2g': 'NG-PON2 2G/2G',
-		'gpon': 'GPON', 'gpon-sym': 'GPON symmetric', 'epon': 'EPON',
-		'epon-1g': 'EPON 1G/1G', '1g-1g-epon': 'EPON 1G/1G',
-		'turbo-epon': 'Turbo EPON'
-	};
-	return labels[String(mode || '').toLowerCase()] || '';
-}
-
-function formatPonRate(bps) {
-	bps = Number(bps);
-	if (!isFinite(bps) || bps <= 0) return '';
-	if (bps >= 1000000000)
-		return (bps / 1000000000).toFixed(5).replace(/0+$/, '').replace(/\.$/, '') + ' Gbps';
-	return (bps / 1000000).toFixed(3).replace(/0+$/, '').replace(/\.$/, '') + ' Mbps';
-}
-
-function ponLineRateText(topo, port) {
-	if (String(port && port.role || '').toLowerCase() !== 'pon') return null;
-	var pon = topo && topo.pon;
-	if (!pon || pon.present !== 1) return _('PON mode unavailable');
-	var name = ponModeName(pon.mode_name);
-	var down = formatPonRate(pon.down_bps);
-	var up = formatPonRate(pon.up_bps);
-	if (!name) return _('PON mode unavailable');
-	if (!down || !up) return name + ' · ' + _('Line rate unavailable');
-	return name + ' · ↓ ' + down + ' / ↑ ' + up;
-}
-
 function renderEthernetPorts(topo) {
 	topo = topo || {};
 	var ports = (Array.isArray(topo.ports) ? topo.ports : []).filter(function(p) {
@@ -652,22 +624,20 @@ function renderEthernetPorts(topo) {
 	}
 	var table = aui.table({
 		cols: [
-			{ t: _('Port') }, { t: _('Path') }, { t: _('Link') }, { t: _('Speed / Duplex / PON mode') },
+			{ t: _('Port') }, { t: _('Path') }, { t: _('Link') }, { t: _('Speed / Duplex') },
 			{ t: _('RX / TX bytes'), num: true }, { t: _('RX / TX packets'), num: true },
 			{ t: _('RX / TX errors'), num: true }, { t: _('RX / TX dropped'), num: true }
 		],
 		rows: ports.map(function(p) {
 			var state = p.present === false ? _('Unavailable') :
-				p.carrier === 1 ? _('Up') : p.carrier === 0 ? _('Down') : _('Unknown');
-			var ponRate = ponLineRateText(topo, p);
-			var speed = ponRate !== null ? ponRate :
-				(p.carrier === 1 && p.speed_mbps > 0 ? p.speed_mbps + ' Mbps' : 'N/A');
+				p.carrier === 1 ? _('Link up') : p.carrier === 0 ? _('Link down') : _('Unknown');
+			var speed = p.carrier === 1 && p.speed_mbps > 0 ? p.speed_mbps + ' Mbps' : 'N/A';
 			var path = (p.kind === 'gsw' ? 'GSW' : 'GDM') + p.reg;
 			if (p.nbq !== null && p.nbq !== undefined) path += ' / NBQ' + p.nbq;
 			return [
 				humanPortName(p, topo) + ' (' + p.netdev + ')',
 				path, aui.pill(state, p.carrier === 1 ? 'ok' : ''),
-				speed + (ponRate === null && p.carrier === 1 && p.duplex ? ' / ' + p.duplex : ''),
+				speed + (p.carrier === 1 && p.duplex ? ' / ' + p.duplex : ''),
 				bytes(p.rx_bytes) + ' / ' + bytes(p.tx_bytes),
 				count(p.rx_packets) + ' / ' + count(p.tx_packets),
 				count(p.rx_errors) + ' / ' + count(p.tx_errors),
@@ -681,15 +651,26 @@ function renderEthernetPorts(topo) {
 }
 
 /* Detailed MT7996 per-band health. The backend's has_wifi flag is
- * authoritative, so radio-less XG2010G systems do not render an empty table. */
+ * authoritative, so radio-less XG2010G systems do not render an empty
+ * section.
+ *
+ * One card per radio band, laid out exactly like the NPU & Offload Engine
+ * block above: the left border carries the band's own accent
+ * (--ai-band-24 / -5 / -6, the same tokens the band gauges use) so the three
+ * bands stay distinguishable at a glance instead of being three anonymous
+ * table rows. Every value the old per-band table showed is still here - the
+ * path moved into the card's right-hand tag, the airtime column became the
+ * bar, and the rest are rows. */
 function renderWifiDetails(wifi, ppe, ti, st) {
 	wifi = wifi || {};
 	if (!aui.hasWifiRadio(wifi)) return null;
 	var bands = Array.isArray(wifi.bands) ? wifi.bands : [];
 	var bandBnd = ppe && ppe.bnd && Array.isArray(ppe.bnd.band_bnd) ? ppe.bnd.band_bnd : [];
 	var bandUnb = ppe && ppe.unb && Array.isArray(ppe.unb.band_unb) ? ppe.unb.band_unb : [];
-	var rows = bands.map(function(bd) {
-		var info = aui.BANDS[bd.band] || { full: 'Band ' + bd.band };
+	var cards = bands.map(function(bd) {
+		var info = aui.BANDS[bd.band];
+		var accent = info ? 'var(' + info.varName + ')' : 'var(--ds-border-strong)';
+		var name = info ? info.full : _('Frequency band') + ' ' + bd.band;
 		var txPackets = Number(bd.tx_packets) || 0;
 		var txRetries = Number(bd.tx_retries) || 0;
 		var retry = txPackets + txRetries > 0 ? txRetries / (txPackets + txRetries) * 100 : (Number(bd.retry_pct) || 0);
@@ -701,36 +682,191 @@ function renderWifiDetails(wifi, ppe, ti, st) {
 		var queueType = txQueue && txQueue.type ? String(txQueue.type).toUpperCase() :
 			(isEnabled(st && st.npu_loaded) ? 'NPU' : 'DMA');
 		var signal = (bd.stations || 0) > 0 ? (bd.avg_signal || 0) + ' / ' + (bd.min_signal || 0) : 'N/A';
-		return [
-			info.full,
-			'P7 / ' + queueType,
-			aui.pill(health.text, health.kind),
-			String(bd.stations || 0),
-			E('span', { 'style': 'color:' + retryColor }, retry.toFixed(1) + '%'),
-			(bd.airtime_efficiency || 0) + '%',
-			(bd.avg_phy_rate || 0) + ' / ' + (bd.avg_exp_throughput || 0),
-			String(bd.tx_failed || 0),
-			signal,
-			String(bd.tx_mbps || 0),
-			(bandBnd[bd.band] || 0) + ' / ' + (bandUnb[bd.band] || 0)
-		];
+		var airtime = Number(bd.airtime_efficiency) || 0;
+		return aui.card({
+			name: name,
+			tag: 'P7 / ' + queueType,
+			accent: accent,
+			body: [
+				aui.bar({
+					pct: airtime,
+					accent: accent,
+					title: _('Airtime'),
+					right: airtime + '%'
+				}),
+				aui.row(_('Status'), aui.pill(health.text, health.kind)),
+				aui.row(_('Clients'), String(bd.stations || 0)),
+				aui.row(_('Retry'), E('span', { 'style': 'color:' + retryColor }, retry.toFixed(1) + '%')),
+				aui.row(_('PHY / Expected'), aui.fmtMbps(bd.avg_phy_rate) + ' / ' + aui.fmtMbps(bd.avg_exp_throughput)),
+				aui.row(_('Failed'), String(bd.tx_failed || 0)),
+				aui.row(_('Signal'), signal),
+				aui.row(_('TX'), aui.fmtMbps(bd.tx_mbps) + ' Mbps'),
+				aui.row('BND / UNB', (bandBnd[bd.band] || 0) + ' / ' + (bandUnb[bd.band] || 0))
+			]
+		});
 	});
-	var table = aui.table({
-		mono: true, stack: true, emptyText: _('No entries'),
-		cols: [
-			{ t: _('Band') }, { t: _('Path') }, { t: _('Status') }, { t: _('Clients'), num: true },
-			{ t: _('Retry'), num: true }, { t: _('Airtime'), num: true }, { t: _('PHY / Expected'), num: true },
-			{ t: _('Failed'), num: true }, { t: _('Signal'), num: true }, { t: _('TX') + ' Mbps', num: true },
-			{ t: 'BND / UNB', num: true }
-		],
-		rows: rows
-	});
-	table.classList.add('ai-port-table');
+	var body = cards.length
+		? E('div', {}, [
+			E('div', { 'class': 'ai-subhead', 'style': 'margin-top:0' }, _('Frequency band')),
+			E('div', { 'class': 'ai-grid ai-grid--3' }, cards)
+		])
+		: aui.empty(_('No entries'));
 	return aui.section({
 		title: _('WiFi Band Details'),
 		hint: _('Per-band airtime efficiency, negotiated and expected rates, failure counts and BND/UNB ownership.'),
-		body: table
+		body: body
 	});
+}
+
+/* ── Frame Engine (GDM ports + CDM engines) ──────────────────────────────
+ * The GDM data MACs and the CDM DMA engines have no debugfs node, so the
+ * backend reads their counters straight from the frame-engine registers.
+ * Those addresses belong to the SoC, not the board, so the same
+ * GDM1/GDM2/GDM4 and CDM1/CDM2 set decodes on both boards this app ships to:
+ * the XR1710G (WiFi router: switch CPU port, USXGMII WAN, USXGMII LAN2) and
+ * the Nokia XG-040G-MD (PON ONU: switch CPU port, PON uplink, lan1). Only the
+ * port *names* differ, and those come from the device-tree topology, exactly
+ * like the Ethernet-ports table, so each card labels itself per board.
+ *
+ * The counters are free-running 32-bit registers: they wrap and reset only on
+ * reboot, so they are shown as plain totals, never as rates. */
+
+/* First topology entry behind a GDM register index, or null. Used both to keep
+ * the GDM cards limited to the ports this board exposes and to give each card
+ * the same board-aware name the port table uses. */
+function gdmPort(topo, reg) {
+	var ports = (topo && Array.isArray(topo.ports)) ? topo.ports : [];
+	for (var i = 0; i < ports.length; i++) {
+		var p = ports[i];
+		if (p && p.kind === 'gdm' && Number(p.reg) === Number(reg)) return p;
+	}
+	return null;
+}
+
+/* Share of a CDM's RX frames the PPE forwarded without the CPU ever seeing
+ * them. A HIGH share is the good case here - it is work the CPU never did -
+ * which is the opposite of every load gauge elsewhere on the page. A low share
+ * is deliberately NOT an error: the engine also carries control/host traffic
+ * the PPE is never meant to touch, so it stays neutral rather than red. */
+function cdmOffloadAccent(pct, total) {
+	if (total <= 0) return 'var(--ds-border-strong)';
+	if (pct >= 80) return 'var(--ds-ok)';
+	if (pct >= 50) return 'var(--ds-warn)';
+	return 'var(--ai-npu)';
+}
+
+function renderGdmCard(g, topo) {
+	g = g || {};
+	var tx = Number(g.tx) || 0, rx = Number(g.rx) || 0;
+	var txDrop = Number(g.tx_drop) || 0, rxDrop = Number(g.rx_drop) || 0;
+	var port = gdmPort(topo, g.reg);
+	var body = [
+		aui.row(_('TX packets'), aui.fmtK(tx)),
+		aui.row(_('RX packets'), aui.fmtK(rx))
+	];
+	if (txDrop > 0) body.push(aui.row(_('TX dropped'), aui.fmtK(txDrop), 'ai-err'));
+	if (rxDrop > 0) body.push(aui.row(_('RX dropped'), aui.fmtK(rxDrop), 'ai-err'));
+	return aui.card({
+		name: 'GDM' + g.reg,
+		tag: port ? humanPortName(port, topo) : _('No port'),
+		accent: (tx > 0 || rx > 0) ? 'var(--ai-npu)' : 'var(--ds-border-strong)',
+		body: body
+	});
+}
+
+function renderCdmCard(c) {
+	c = c || {};
+	var cpu = Number(c.rx_cpu) || 0, hwf = Number(c.rx_hwf) || 0;
+	var total = cpu + hwf;
+	var pct = total > 0 ? hwf / total * 100 : 0;
+	var body = [
+		aui.bar({
+			pct: pct,
+			accent: cdmOffloadAccent(pct, total),
+			title: _('Offload share'),
+			right: total > 0 ? aui.fmtPct(pct, 1) : '—'
+		}),
+		aui.row(_('CPU path'), aui.fmtK(cpu)),
+		aui.row(_('HW forwarded'), aui.fmtK(hwf)),
+		// Register +0x00 of this CDM, presented as a total in its own right.
+		// It is NOT the sum of the CPU/HW delivery split above - on both test
+		// boards it runs on a separate frame stream and can sit far below
+		// rx_cpu - so the three lines must never be added up.
+		// The JSON key stays `tx`: the backend is deployed by hand to two
+		// devices, so renaming the field would break a device that is still
+		// running the old backend with a new frontend.
+		aui.row(_('Total received'), aui.fmtK(c.tx))
+	];
+	if ((Number(c.rx_cpu_drop) || 0) > 0) body.push(aui.row(_('CPU dropped'), aui.fmtK(c.rx_cpu_drop), 'ai-err'));
+	if ((Number(c.rx_hwf_drop) || 0) > 0) body.push(aui.row(_('HW dropped'), aui.fmtK(c.rx_hwf_drop), 'ai-err'));
+	return aui.card({
+		name: 'CDM' + c.reg,
+		tag: 'CPU DMA',
+		accent: 'var(--ai-npu)',
+		body: body
+	});
+}
+
+function renderPseBufferCard(pse) {
+	pse = pse || {};
+	var used = Number(pse.used) || 0, free = Number(pse.free) || 0;
+	var total = used + free;
+	var pct = total > 0 ? used / total * 100 : 0;
+	var accent = total <= 0 ? 'var(--ds-border-strong)'
+		: pct >= 80 ? 'var(--ds-error)' : pct >= 50 ? 'var(--ds-warn)' : 'var(--ds-ok)';
+	return aui.card({
+		name: _('PSE shared buffer'),
+		tag: total > 0 ? aui.fmtPct(pct, 1) : '—',
+		accent: accent,
+		body: aui.bar({
+			pct: pct,
+			accent: accent,
+			title: _('HW Buffer'),
+			right: aui.fmtK(used) + ' / ' + aui.fmtK(total)
+		})
+	});
+}
+
+/* Map the backend's unavailability reason to a translatable sentence. */
+function frameEngineReason(fe) {
+	if (fe && fe.reason === 'devmem_unavailable')
+		return _('Frame Engine counters need the devmem applet (CONFIG_BUSYBOX_CONFIG_DEVMEM) and /dev/mem; neither is available on this build.');
+	return _('Frame Engine counters are unavailable on this build.');
+}
+
+/* The whole frame-engine block, rendered inside the NPU & Offload Engine
+ * section. GDM cards are restricted to the ports this board exposes; the CDM
+ * cards and the PSE buffer are board-independent. */
+function renderFrameEngine(fe, topo) {
+	fe = fe || {};
+	var head = E('div', { 'class': 'ai-subhead', 'style': 'margin-top:0' }, _('Frame Engine'));
+	var hint = E('p', { 'class': 'ai-hint' },
+		_('Register-level counters for the GDM data MACs and CDM DMA engines, read from the frame-engine block.'));
+	if (fe.available === false) {
+		return E('div', { 'style': 'margin-top:var(--ds-sp-4)' }, [
+			head, hint, aui.empty(frameEngineReason(fe))
+		]);
+	}
+	// Keep only the GDM ports this board actually exposes. When the topology
+	// is not known yet (first paint) the filter fails open rather than hiding
+	// every card until the first poll lands.
+	var knownPorts = !!(topo && Array.isArray(topo.ports) && topo.ports.length);
+	var gdm = (Array.isArray(fe.gdm) ? fe.gdm : []).filter(function(g) {
+		return g && (!knownPorts || gdmPort(topo, g.reg));
+	});
+	var cdm = Array.isArray(fe.cdm) ? fe.cdm : [];
+	var blocks = [ head, hint, renderPseBufferCard(fe.pse) ];
+	if (gdm.length) {
+		blocks.push(E('div', { 'class': 'ai-subhead' }, _('GDM Ports')));
+		blocks.push(E('div', { 'class': 'ai-grid ai-grid--3' }, gdm.map(function(g) {
+			return renderGdmCard(g, topo);
+		})));
+	}
+	if (cdm.length) {
+		blocks.push(E('div', { 'class': 'ai-subhead' }, _('CDM Engines')));
+		blocks.push(E('div', { 'class': 'ai-grid ai-grid--3' }, cdm.map(renderCdmCard)));
+	}
+	return E('div', { 'style': 'margin-top:var(--ds-sp-4)' }, blocks);
 }
 
 /* ── NPU and PPE engine status ── */
@@ -887,13 +1023,16 @@ return view.extend({
 		// surface here - it would silently mis-slot real data (e.g. show the
 		// Flow Offload value in the VLAN slot) the moment load() starts
 		// returning data. Whenever the Promise.all order below changes, update
-		// this block in the same commit.
+		// this block in the same commit. Slots 8 (WiFi stats) and 9 (frame
+		// engine) are read only by the live fetch, so they are listed here too
+		// to keep the index map in one piece.
 		var st = data[0] || {}, ppe = data[1] || {}, ti = data[2] || {};
 		var flo = data[3] || { enabled: 0 };
 		var apo = data[4] || { enabled: 0 };
 		var dm = data[5] || {};
 		var topo = data[6] || {};
 		var vo = data[7] || { enabled: 0 };
+		var fe = data[9] || {};
 		var bridgeBlocked = isBridgeOffloadBlocked(dm);
 		var entries = Array.isArray(ppe.entries) ? ppe.entries : [];
 		var latestPpeEntries = entries;
@@ -954,7 +1093,8 @@ return view.extend({
 					renderSummary(st, ti),
 					E('div', { 'id': 'offload-controls', 'style': 'margin-top:var(--ds-sp-3)' },
 						renderOffloadControls(topo, vo, flo, apo, bridgeBlocked)),
-					E('div', { 'id': 'engine-status' }, renderEngineStatus(st, ppe))
+					E('div', { 'id': 'engine-status' }, renderEngineStatus(st, ppe)),
+					E('div', { 'id': 'frame-engine' }, renderFrameEngine(fe, topo))
 				])
 			}),
 
@@ -987,7 +1127,11 @@ return view.extend({
 				// VLAN Offload rejoined as an independent switch; appended at the
 				// END so every existing d[n] index below keeps its meaning.
 				_safeCall(callGetVlanOffload(), { enabled: 0 }),
-				_safeCall(callGetWifiStats(), { available: false, bands: [] })
+				_safeCall(callGetWifiStats(), { available: false, bands: [] }),
+				// Frame Engine (GDM/CDM) appended at the END for the same
+				// reason as VLAN above: every existing d[n] index keeps its
+				// meaning.
+				_safeCall(callFrameEngine(), { available: false, reason: 'request_failed' })
 			]).then(L.bind(function(d) {
 				aui.ensureCss();
 				var st = d[0] || {}, ppe = d[1] || {}, ti = d[2] || {};
@@ -999,6 +1143,7 @@ return view.extend({
 				var wifi = d[8] || { available: false, bands: [] };
 				if (typeof wifi.has_wifi !== 'boolean' && typeof ti.has_wifi === 'boolean')
 					wifi.has_wifi = ti.has_wifi;
+				var fe = d[9] || { available: false };
 				var bridgeBlocked = isBridgeOffloadBlocked(dm);
 				var entries = Array.isArray(ppe.entries) ? ppe.entries : [];
 				if (requestSequence > latestPpeRequest) {
@@ -1058,6 +1203,8 @@ return view.extend({
 
 				var engineEl = document.getElementById('engine-status');
 				if (engineEl) engineEl.replaceChildren(renderEngineStatus(st, ppe));
+				var feEl = document.getElementById('frame-engine');
+				if (feEl) feEl.replaceChildren(renderFrameEngine(fe, topo));
 				var epEl = document.getElementById('ethernet-ports');
 				if (epEl) { epEl.innerHTML = ''; epEl.appendChild(renderEthernetPorts(topo)); }
 				var wifiEl = document.getElementById('wifi-detail');
