@@ -161,7 +161,7 @@ function boardPortNames(topo) {
 /* Human-facing name for a topology port: "10G WAN", "10G LAN2", "1G LAN3". */
 function humanPortName(p, topo) {
 	p = p || {};
-	if (p.role === 'pon') return 'PON';
+	if (isPonPort(topo, p)) return 'PON';
 	if (isSwitchCpuPort(p)) {
 		var lans = switchLanNetdevs(p.pse, topo);
 		if (!lans.length) return _('Internal Switch');
@@ -607,6 +607,60 @@ function updateOffloadControl(inputId, badgeId, rowId, enabled, blocked) {
 	}
 }
 
+function ponModeName(mode) {
+	var labels = {
+		'xgpon': 'XG-PON', 'xgspon': 'XGS-PON',
+		'epon-10g-1g': '10G-EPON 10G/1G', '10g-1g-epon': '10G-EPON 10G/1G',
+		'epon-10g-10g': '10G-EPON 10G/10G', '10g-10g-epon': '10G-EPON 10G/10G',
+		'ngpon2-10g-10g': 'NG-PON2 10G/10G', 'ngpon2-10g-2g': 'NG-PON2 10G/2G',
+		'ngpon2-2g-2g': 'NG-PON2 2G/2G',
+		'gpon': 'GPON', 'gpon-sym': 'GPON symmetric', 'epon': 'EPON',
+		'epon-1g': 'EPON 1G/1G', '1g-1g-epon': 'EPON 1G/1G',
+		'turbo-epon': 'Turbo EPON'
+	};
+	return labels[String(mode || '').toLowerCase()] || '';
+}
+
+function formatPonRate(bps) {
+	bps = Number(bps);
+	if (!isFinite(bps) || bps <= 0) return '';
+	if (bps >= 1000000000)
+		return (bps / 1000000000).toFixed(5).replace(/0+$/, '').replace(/\.$/, '') + ' Gbps';
+	return (bps / 1000000).toFixed(3).replace(/0+$/, '').replace(/\.$/, '') + ' Mbps';
+}
+
+function isPonPresent(value) {
+	return value === true || value === 1 || value === '1';
+}
+
+function isPonPort(topo, port) {
+	var pon = topo && topo.pon;
+	var role = String(port && port.role || '').toLowerCase();
+	var netdev = String(port && port.netdev || '').toLowerCase();
+	if (role === 'pon') return true;
+	if (pon && pon.netdev && String(pon.netdev).toLowerCase() === netdev) return true;
+	return netdev === 'pon0' && !!(isPonPresent(topo && topo.has_pon) || (pon && isPonPresent(pon.present)));
+}
+
+function ponRateBps(pon, direction) {
+	var bps = Number(pon && pon[direction + '_bps']);
+	if (isFinite(bps) && bps > 0) return bps;
+	var mbps = Number(pon && pon[direction + '_mbps']);
+	return isFinite(mbps) && mbps > 0 ? mbps * 1000000 : 0;
+}
+
+function ponLineRateText(topo, port) {
+	if (!isPonPort(topo, port)) return null;
+	var pon = topo && topo.pon;
+	if (!pon || (pon.present !== undefined && !isPonPresent(pon.present))) return _('PON mode unavailable');
+	var name = ponModeName(pon.mode_name);
+	var down = formatPonRate(ponRateBps(pon, 'down'));
+	var up = formatPonRate(ponRateBps(pon, 'up'));
+	if (!name) return _('PON mode unavailable');
+	if (!down || !up) return name + ' · ' + _('Line rate unavailable');
+	return name + ' · ↓ ' + down + ' / ↑ ' + up;
+}
+
 function renderEthernetPorts(topo) {
 	topo = topo || {};
 	var ports = (Array.isArray(topo.ports) ? topo.ports : []).filter(function(p) {
@@ -624,20 +678,22 @@ function renderEthernetPorts(topo) {
 	}
 	var table = aui.table({
 		cols: [
-			{ t: _('Port') }, { t: _('Path') }, { t: _('Link') }, { t: _('Speed / Duplex') },
+			{ t: _('Port') }, { t: _('Path') }, { t: _('Link') }, { t: _('Speed / Duplex / PON mode') },
 			{ t: _('RX / TX bytes'), num: true }, { t: _('RX / TX packets'), num: true },
 			{ t: _('RX / TX errors'), num: true }, { t: _('RX / TX dropped'), num: true }
 		],
 		rows: ports.map(function(p) {
 			var state = p.present === false ? _('Unavailable') :
 				p.carrier === 1 ? _('Link up') : p.carrier === 0 ? _('Link down') : _('Unknown');
-			var speed = p.carrier === 1 && p.speed_mbps > 0 ? p.speed_mbps + ' Mbps' : 'N/A';
+			var ponRate = ponLineRateText(topo, p);
+			var speed = ponRate !== null ? ponRate :
+				(p.carrier === 1 && p.speed_mbps > 0 ? p.speed_mbps + ' Mbps' : 'N/A');
 			var path = (p.kind === 'gsw' ? 'GSW' : 'GDM') + p.reg;
 			if (p.nbq !== null && p.nbq !== undefined) path += ' / NBQ' + p.nbq;
 			return [
 				humanPortName(p, topo) + ' (' + p.netdev + ')',
 				path, aui.pill(state, p.carrier === 1 ? 'ok' : ''),
-				speed + (p.carrier === 1 && p.duplex ? ' / ' + p.duplex : ''),
+				speed + (ponRate === null && p.carrier === 1 && p.duplex ? ' / ' + p.duplex : ''),
 				bytes(p.rx_bytes) + ' / ' + bytes(p.tx_bytes),
 				count(p.rx_packets) + ' / ' + count(p.tx_packets),
 				count(p.rx_errors) + ' / ' + count(p.tx_errors),
