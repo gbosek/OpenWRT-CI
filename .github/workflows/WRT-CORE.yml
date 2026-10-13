@@ -241,6 +241,10 @@ jobs:
           python3 "$GITHUB_WORKSPACE/Scripts/check-ppe-build.py" \
             --manifest-dir ./bin/targets/airoha/an7581 --build-dir ./build_dir
 
+      - name: Verify latest Airoha and four-core MWAN4 image
+        if: ${{ !inputs.WRT_TEST && inputs.WRT_CONFIG == 'AIROHA' && inputs.WRT_MWAN == 'mwan4' }}
+        run: python3 "$GITHUB_WORKSPACE/Scripts/check-xg2010g-build.py" ./wrt
+
       - name: Save Build Cache
         if: ${{ !inputs.WRT_TEST && success() && steps.cache-restore.outputs.cache-hit != 'true' }}
         uses: actions/cache/save@main
@@ -306,7 +310,7 @@ jobs:
           body: |
             XG2010G ${{env.WRT_MWAN_LABEL}} 专用固件：仅编译 Gemtek XG2010G。
             多 WAN 方案：${{env.WRT_MWAN_LABEL}}，准确来源见附件 ${{env.WRT_MWAN_SOURCE_FILE}}。
-            包含多 WAN 中文界面、Airoha NPU r10、ttyd 中文界面、RPS 持久化和现有温度/PON 状态页。
+            包含多 WAN 中文界面、Airoha NPU 最新源码 323539c（上游标注 r9）、ttyd 中文界面、四核 CPU 使用率、RPS 重启恢复和现有温度/PON 状态页。
             已加入 [PATCH net v2] net: airoha: keep PPE offload when NPU refuses flow stats。
             CONFIG_NET_AIROHA_FLOW_STATS=y；发布前检查内核源码、编译对象和固件软件包清单。
             切换多 WAN 实现后，需要按当前线路重新设置接口和策略。

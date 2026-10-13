@@ -124,7 +124,8 @@ airoha_npu_version() {
 
 airoha_bridge_offload_supported() {
 	case "$(airoha_board_compat)" in
-		gemtek,xg2010g|gemtek,xg2010g-ubi|gemtek,xg2010g-recovery) return 1 ;;
+		gemtek,xg2010g|gemtek,xg2010g-ubi|gemtek,xg2010g-recovery|\
+		gemtek,xg2010g-2g|gemtek,xg2010g-2g-ubi|gemtek,xg2010g-2g-recovery) return 1 ;;
 		*) return 0 ;;
 	esac
 }
@@ -142,8 +143,13 @@ airoha_ppe_parse() {
 # ---------------------------------------------------------------------------
 
 # Minimal JSON string sanitiser: drop quotes, backslashes and newlines.
+# One tr instead of three: on the topology hot path this helper ran 6 times per
+# port, so the old chain cost 18 execs per port for a job one call can do.
+# The set is the union of the old three ('"' , '\\', then '\n\r') and is quoted
+# so tr - not the shell - sees the backslash: '\\' is tr's escape for one
+# backslash, '\r' and '\n' its escapes for CR and LF.
 _airoha_json_str() {
-	printf '%s' "$1" | tr -d '"' | tr -d '\\' | tr -d '\n\r'
+	printf '%s' "$1" | tr -d '"\\\r\n'
 }
 
 # airoha_dt_read <relpath> — first NUL-terminated string of the DT property.
@@ -254,9 +260,16 @@ airoha_pon_rates() {
 #   0 = no light (LOS asserted) -> echo 1 ; 1 = light present -> echo 0 ; else nothing.
 airoha_pon_los() {
 	local f="/proc/tc3162/los_status"
-	local signal
+	local signal=""
 	if [ -r "$f" ]; then
-		signal=$(cat "$f" 2>/dev/null)
+		# One less fork per poll, in the read shape documented at
+		# _airoha_net_number() below: emptied first because a failed redirect
+		# leaves the variable untouched, and -r guarded because 2>/dev/null
+		# cannot silence the redirect failure itself. A file that reads empty
+		# falls through to the *) branch exactly as an empty $(cat) did.
+		# IFS= because `read` would otherwise strip the leading and trailing
+		# blanks that a plain $(cat) kept - this attribute is compared verbatim.
+		IFS= read -r signal < "$f"
 	else
 		signal=$(awk '$1 == "optical_signal:" { print $2; exit }' /sys/kernel/debug/airoha-xpon-pon0/line 2>/dev/null)
 	fi
@@ -270,8 +283,16 @@ airoha_pon_los() {
 # GPON ONU state (e.g. "O5"), or nothing.
 airoha_pon_onu_state() {
 	local f="/proc/xgpon/state"
+	local state=""
 	if [ -r "$f" ]; then
-		cat "$f" 2>/dev/null
+		# One less fork per poll, in the read shape documented at
+		# _airoha_net_number() below: emptied first because a failed redirect
+		# leaves the variable untouched, and -r guarded because 2>/dev/null
+		# cannot silence the redirect failure itself. IFS= because the value is
+		# emitted verbatim. The guard keeps an empty file from printing a bare
+		# newline that a plain $(cat) would not have produced.
+		IFS= read -r state < "$f"
+		[ -n "$state" ] && printf '%s\n' "$state"
 	else
 		awk '$1 == "onu_state:" && $2 ~ /^O[1-9]$/ { print $2; exit }' \
 			/sys/kernel/debug/airoha-xpon-pon0/registration 2>/dev/null
@@ -290,10 +311,15 @@ airoha_pon_netdev() {
 # Negotiated link speed (Mbps) of a netdev, empty when unavailable
 # (missing interface, driver error, link down with "-1" reporting).
 _airoha_netdev_speed_mbps() {
-	local dev="$1" s
+	local dev="$1" s=""
 	[ -n "$dev" ] || return 0
 	[ -e "/sys/class/net/$dev" ] || return 0
-	s=$(cat "/sys/class/net/$dev/speed" 2>/dev/null)
+	# The guard above tests the interface directory, not the attribute, so the
+	# read needs its own -r test. Pre-cleared and -r guarded for the reasons
+	# spelled out at _airoha_net_number() below: an unreadable speed file must
+	# report "unavailable", not the previous interface's speed. IFS= keeps the
+	# value byte-identical to the $(cat) it replaces.
+	[ -r "/sys/class/net/$dev/speed" ] && IFS= read -r s < "/sys/class/net/$dev/speed"
 	case "$s" in ''|*[!0-9]*) return 0 ;; esac
 	[ "$s" -gt 0 ] 2>/dev/null || return 0
 	echo "$s"
@@ -322,15 +348,36 @@ _airoha_gdm_netdev() {
 }
 
 # Unknown/down-link sysfs values must not look like measured zero counters.
+#
+# The value is pulled with the `read` builtin instead of $(cat F): this helper
+# runs once per port per counter (8 counters + carrier + speed per port), and
+# each $(...) costs a fork+exec of ~7 ms on these boards. Two properties of
+# `read` force the shape below:
+#   1. a failed redirect makes ash skip `read` entirely, so the variable would
+#      keep the PREVIOUS port's number and silently duplicate a counter -> the
+#      variable is emptied first, preserving "unreadable == null";
+#   2. "2>/dev/null" does NOT silence the redirect failure itself (ash reports
+#      it while opening the file, before that redirection is in effect), so the
+#      -r test guards the read instead - otherwise every missing sysfs node
+#      would print a diagnostic on rpcd's stderr.
 _airoha_net_number() {
 	local value
-	value=$(cat "$1" 2>/dev/null)
+	value=""
+	[ -r "$1" ] && read -r value < "$1"
 	case "$value" in ''|*[!0-9]*) printf 'null' ;; *) printf '%s' "$value" ;; esac
 }
 
-_airoha_port_json() {
+# Cache fields are line-oriented, so strip the delimiter as well as line breaks.
+# The values are sanitized again for JSON when the cached structure is emitted.
+_airoha_topology_field() {
+	printf '%s' "$1" | tr -d '|\n\r'
+}
+
+# Resolve only the boot-stable portion of a port. Live carrier, negotiation and
+# counters are deliberately absent: caching any of those would freeze the page.
+_airoha_port_struct() {
 	local rel="$1" kind="$2" reg="$3" nbq="$4"
-	local netdev mode role pse key base field
+	local netdev mode role pse key
 	mode=$(airoha_dt_read "$rel/phy-mode")
 	if [ "$kind" = "gsw" ]; then
 		netdev=$(airoha_dt_read "$rel/label")
@@ -349,31 +396,75 @@ _airoha_port_json() {
 		[ "$mode" = internal ] && role=conduit
 		[ -e "/proc/device-tree/$rel/airoha,pon-data-path" ] && role=pon
 	fi
+	printf 'port|%s|%s|%s|%s|%s|%s|%s|%s' \
+		"$(_airoha_topology_field "$netdev")" "$key" "$kind" "$reg" \
+		"$nbq" "$pse" "$role" "$(_airoha_topology_field "$mode")"
+}
+
+# Join cached identity with the sysfs values that must remain fresh on every
+# poll. Keep this key order in lockstep with the original topology contract.
+_airoha_cached_port_json() {
+	local netdev="$1" key="$2" kind="$3" reg="$4"
+	local nbq="$5" pse="$6" role="$7" mode="$8"
+	local base field present=false duplex="" carrier speed rates down up=null
 	base="/sys/class/net/$netdev"
-	local present=false
 	[ -n "$netdev" ] && [ -d "$base" ] && present=true
+	# Same read-not-cat rule as _airoha_net_number(): emptied first so a failed
+	# redirect reports "", and -f guarded so the redirect never fails loudly.
+	[ -f "$base/duplex" ] && read -r duplex < "$base/duplex"
+	carrier=$(_airoha_net_number "$base/carrier")
+	speed=$(_airoha_net_number "$base/speed")
+	# The xpon driver publishes speed/duplex sysfs attributes that are always
+	# empty, so a PON port that is up and carrying traffic still rendered
+	# "N/A". Fall back to the line rate derived from the PON mode
+	# (airoha_pon_rates(): XGPON 10G/2.5G, XGSPON 10G/10G, 10G-EPON 10G/1G or
+	# 10G/10G, GPON 2.5G/1.25G, ...), and to a flat 10G only when the mode
+	# itself could not be read ("0 0"). Two deliberate limits:
+	#   - only while carrier is up, so a dark fibre still reads as unknown;
+	#   - only when the attribute is genuinely unreadable, so a future driver
+	#     that does report the negotiated rate keeps winning.
+	# Reached at most once per poll, and only on boards with a PON port.
+	# Duplex stays empty on purpose: PON has no duplex attribute to report.
+	if [ "$role" = pon ] && [ "$carrier" = 1 ] && [ "$speed" = null ]; then
+		rates=$(airoha_pon_rates)
+		down="${rates%% *}"
+		up="${rates##* }"
+		case "$down" in ''|*[!0-9]*) down=0 ;; esac
+		case "$up" in ''|*[!0-9]*) up=null ;; esac
+		if [ "$down" -gt 0 ] 2>/dev/null; then
+			speed="$down"
+		else
+			# Mode unreadable: there is no up rate to stand behind either, so
+			# the placeholder must not claim a 2.5G upstream.
+			speed=10000
+			up=null
+		fi
+	fi
 	printf '{"key":"%s","kind":"%s","reg":%s,"port":%s,"nbq":%s,"pse":%s,"netdev":"%s","role":"%s","mode":"%s","present":%s' \
-		"$key" "$kind" "$reg" "$reg" "$nbq" "$pse" "$(_airoha_json_str "$netdev")" "$role" "$mode" "$present"
+		"$(_airoha_json_str "$key")" "$(_airoha_json_str "$kind")" "$reg" "$reg" "$nbq" "$pse" \
+		"$(_airoha_json_str "$netdev")" "$(_airoha_json_str "$role")" "$(_airoha_json_str "$mode")" "$present"
 	printf ',"carrier":%s,"speed_mbps":%s,"duplex":"%s"' \
-		"$(_airoha_net_number "$base/carrier")" \
-		"$(_airoha_net_number "$base/speed")" \
-		"$(_airoha_json_str "$(cat "$base/duplex" 2>/dev/null)")"
+		"$carrier" "$speed" "$(_airoha_json_str "$duplex")"
 	for field in rx_bytes tx_bytes rx_packets tx_packets rx_errors tx_errors rx_dropped tx_dropped; do
 		printf ',"%s":%s' "$field" "$(_airoha_net_number "$base/statistics/$field")"
 	done
+	# PON is the only asymmetric link on these boards, so the port row carries
+	# its upstream rate too; every other port leaves it null. Appended last so
+	# the established key order in front of it is untouched.
+	printf ',"speed_up_mbps":%s' "$up"
 	printf '}'
 }
 
-# Include split GDM/NBQ children as separate netdevs, never shared MIB samples.
-airoha_port_topology_json() {
-	local model compatible
-	model=$(airoha_board_model)
-	compatible=$(airoha_board_compat)
+# Build the device-tree/sysfs identity map once. The temporary name is unique
+# per rpcd child and mv publishes only a complete file to concurrent readers.
+_airoha_topology_cache_build() {
+	local cache="$1" tmp="${1}.$$"
+	local model compatible ports="" lan_raw="" lan_lines=""
+	local wan_netdev="" lan_count=0 wan_count=0 has_pon port_count=0
+	local n rel netdev x child nbq entry children
 
-	local ports=""
-	local lan_raw="" wan_netdev=""
-	local lan_json="[]" lan_count=0 wan_count=0
-	local n rel netdev first x child nbq entry children
+	model=$(_airoha_topology_field "$(airoha_board_model)")
+	compatible=$(_airoha_topology_field "$(airoha_board_compat)")
 
 	# Enabled GDM ports: soc/ethernet@1fb50000/ethernet@N.
 	for n in 1 2 3 4; do
@@ -387,14 +478,23 @@ airoha_port_topology_json() {
 			airoha_dt_node_okay "$child" || continue
 			nbq="${child##*@}"
 			case "$nbq" in ''|*[!0-9a-fA-F]*) continue ;; esac
-			entry=$(_airoha_port_json "$child" gdm "$n" "$((0x$nbq))")
-			[ -z "$ports" ] || ports="$ports,"
-			ports="$ports$entry"
+			entry=$(_airoha_port_struct "$child" gdm "$n" "$((0x$nbq))")
+			# Counted as they are appended rather than by re-scanning $ports:
+			# the count is a header record the validator checks, so it has to
+			# come from the same pass that produced the rows.
+			if [ -n "$entry" ]; then
+				ports="${ports}${entry}
+"
+				port_count=$((port_count + 1))
+			fi
 		done
 		[ "$children" = 0 ] || continue
-		entry=$(_airoha_port_json "$rel" gdm "$n" null)
-		[ -z "$ports" ] || ports="$ports,"
-		ports="$ports$entry"
+		entry=$(_airoha_port_struct "$rel" gdm "$n" null)
+		if [ -n "$entry" ]; then
+			ports="${ports}${entry}
+"
+			port_count=$((port_count + 1))
+		fi
 		netdev=$(_airoha_gdm_netdev "$rel")
 		if [ "$n" = 2 ]; then
 			[ -n "$netdev" ] && wan_netdev="$netdev"
@@ -408,37 +508,219 @@ airoha_port_topology_json() {
 		airoha_dt_node_okay "$rel" || continue
 		netdev=$(airoha_dt_read "$rel/label")
 		[ -n "$netdev" ] || continue
-		entry=$(_airoha_port_json "$rel" gsw "$n" null)
-		[ -z "$ports" ] || ports="$ports,"
-		ports="$ports$entry"
+		entry=$(_airoha_port_struct "$rel" gsw "$n" null)
+		if [ -n "$entry" ]; then
+			ports="${ports}${entry}
+"
+			port_count=$((port_count + 1))
+		fi
 		lan_raw="${lan_raw}${netdev}
 "
 	done
 
-	# LAN netdevs: role=="lan" port netdevs plus existing /sys/class/net/lan*.
-	# The DSA conduit ("cpu") is not a LAN-facing port, so keep only lan* names.
+	# LAN membership is structural for a booted board. Store one record per
+	# netdev instead of embedding JSON, which keeps the cache POSIX-sh friendly.
 	local d
 	for d in /sys/class/net/lan*; do
 		[ -e "$d" ] || continue
 		lan_raw="${lan_raw}$(basename "$d")
 "
 	done
-	lan_json=""
-	lan_count=0
-	first=1
 	for x in $(printf '%s' "$lan_raw" | grep -E '^lan[0-9]+$' | sort -u); do
-		[ "$first" = "1" ] || lan_json="${lan_json},"
-		first=0
-		lan_json="${lan_json}\"$(_airoha_json_str "$x")\""
+		lan_lines="${lan_lines}lan|$(_airoha_topology_field "$x")
+"
 		lan_count=$((lan_count + 1))
 	done
+
+	wan_netdev=$(_airoha_topology_field "$wan_netdev")
+	[ -n "$wan_netdev" ] && wan_count=1
+	has_pon=$(airoha_pon_present)
+
+	# Publication time, so the reader can expire the file: structure is static,
+	# but not everything is present at the first poll - the xpon module and any
+	# late DSA port load after it, and without an expiry has_pon would stay
+	# pinned at whatever that first sample saw and null the PON block forever.
+	# Left empty when date is unavailable; the validator then trusts the file
+	# rather than rebuilding on every call.
+	local now
+	now=$(date +%s 2>/dev/null)
+	case "$now" in ''|*[!0-9]*) now="" ;; esac
+
+	rm -f "$tmp"
+	(umask 077; {
+		printf 'version|1\n'
+		printf 'model|%s\n' "$model"
+		printf 'compatible|%s\n' "$compatible"
+		printf 'wan_netdev|%s\n' "$wan_netdev"
+		printf 'lan_count|%s\n' "$lan_count"
+		printf 'wan_count|%s\n' "$wan_count"
+		printf 'has_pon|%s\n' "$has_pon"
+		# Port rows are last in the file, so a tail truncation drops them and
+		# nothing else: without this record the validator cannot tell 9 ports
+		# from 8 and accepts a silently short topology.
+		printf 'port_count|%s\n' "$port_count"
+		printf 'ts|%s\n' "$now"
+		# INVARIANT: every row ends with a newline, so a complete file always
+		# ends with one. _airoha_topology_cache_valid() rejects a tail the
+		# shell had to rescue from EOF, and that is only sound while this
+		# holds - drop the newline on the last row and every cache would be
+		# rejected, turning a once-a-minute rebuild into one per poll. Perf
+		# only, no wrong values, which is why the check errs that way.
+		printf '%s' "$lan_lines"
+		printf '%s' "$ports"
+	} > "$tmp") 2>/dev/null || { rm -f "$tmp"; return 1; }
+	[ -s "$tmp" ] && mv -f "$tmp" "$cache" 2>/dev/null || {
+		rm -f "$tmp"
+		return 1
+	}
+}
+
+# Reject partial or malformed cache files before using them, and expire them so
+# hardware that appears after the first poll is picked up. This makes a
+# power-loss/truncated file self-healing on the next dashboard request.
+_airoha_topology_cache_valid() {
+	local cache="$1" record f1 f2 f3 f4 f5 f6 f7 f8 extra
+	local version_seen=0 model_seen=0 compatible_seen=0 wan_seen=0
+	local lan_count_seen=0 wan_count_seen=0 pon_seen=0
+	local port_count_seen=0 ts_seen=0
+	local lan_count=0 port_count=0
+	local cached_lan_count="" cached_port_count="" cached_ts="" now age
+	local partial=0
+	[ -s "$cache" ] || return 1
+	# `|| { partial=1; [ -n "$record" ]; }` pulls a final line with no trailing
+	# newline into the body instead of letting read drop it - a complete cache
+	# always ends with one, every row being appended with it, so a rescued tail
+	# can only come from a write that was cut short. It is rejected outright
+	# rather than field-checked: a row cut inside its last field is still
+	# field-valid, and would otherwise pass every check below and publish a
+	# silently wrong value.
+	while IFS='|' read -r record f1 f2 f3 f4 f5 f6 f7 f8 extra || { partial=1; [ -n "$record" ]; }; do
+		[ "$partial" = 1 ] && return 1
+		case "$record" in
+			version)
+				[ "$version_seen" = 0 ] && [ "$f1" = 1 ] && [ -z "$f2" ] || return 1
+				version_seen=1
+				;;
+			model)
+				[ "$model_seen" = 0 ] && [ -z "$f2" ] || return 1
+				model_seen=1
+				;;
+			compatible)
+				[ "$compatible_seen" = 0 ] && [ -z "$f2" ] || return 1
+				compatible_seen=1
+				;;
+			wan_netdev)
+				[ "$wan_seen" = 0 ] && [ -z "$f2" ] || return 1
+				wan_seen=1
+				;;
+			lan_count)
+				[ "$lan_count_seen" = 0 ] && [ -z "$f2" ] || return 1
+				case "$f1" in ''|*[!0-9]*) return 1 ;; esac
+				cached_lan_count="$f1"
+				lan_count_seen=1
+				;;
+			wan_count)
+				[ "$wan_count_seen" = 0 ] && [ -z "$f2" ] || return 1
+				case "$f1" in 0|1) ;; *) return 1 ;; esac
+				wan_count_seen=1
+				;;
+			has_pon)
+				[ "$pon_seen" = 0 ] && [ -z "$f2" ] || return 1
+				case "$f1" in 0|1) ;; *) return 1 ;; esac
+				pon_seen=1
+				;;
+			port_count)
+				[ "$port_count_seen" = 0 ] && [ -z "$f2" ] || return 1
+				case "$f1" in ''|*[!0-9]*) return 1 ;; esac
+				cached_port_count="$f1"
+				port_count_seen=1
+				;;
+			ts)
+				[ "$ts_seen" = 0 ] && [ -z "$f2" ] || return 1
+				case "$f1" in
+					'') cached_ts="" ;;
+					*[!0-9]*) return 1 ;;
+					*) cached_ts="$f1" ;;
+				esac
+				ts_seen=1
+				;;
+			lan)
+				[ -n "$f1" ] && [ -z "$f2" ] || return 1
+				lan_count=$((lan_count + 1))
+				;;
+			port)
+				[ -n "$f2" ] && [ -n "$f3" ] && [ -n "$f7" ] && [ -z "$extra" ] || return 1
+				case "$f4" in ''|*[!0-9]*) return 1 ;; esac
+				case "$f5" in null) ;; ''|*[!0-9]*) return 1 ;; esac
+				case "$f6" in ''|*[!0-9]*) return 1 ;; esac
+				port_count=$((port_count + 1))
+				;;
+			*) return 1 ;;
+		esac
+	done < "$cache"
+	[ "$version_seen$model_seen$compatible_seen$wan_seen$lan_count_seen$wan_count_seen$pon_seen$port_count_seen$ts_seen" = 111111111 ] || return 1
+	[ "$lan_count" -eq "$cached_lan_count" ] 2>/dev/null || return 1
+	[ "$port_count" -eq "$cached_port_count" ] 2>/dev/null || return 1
+	# Only a clock the cache itself was stamped with can expire it: an empty ts
+	# means date was missing at build time, and rebuilding every poll on such a
+	# box would be far worse than trusting a slightly old structure.
+	[ -n "$cached_ts" ] || return 0
+	now=$(date +%s 2>/dev/null)
+	case "$now" in ''|*[!0-9]*) return 0 ;; esac
+	# A cache stamped in the future is clock skew, not corruption: without this
+	# the age below goes negative and "-le 60" would accept it by accident.
+	[ "$now" -ge "$cached_ts" ] 2>/dev/null || return 0
+	age=$((now - cached_ts))
+	# Strictly less than, matching the PPE cache: a 2 s TTL there means
+	# [0, 2), so 60 s here means [0, 60) and a cache is fresh for 60 whole
+	# seconds, expiring on the 61st.
+	[ "$age" -lt 60 ]
+}
+
+# Include split GDM/NBQ children as separate netdevs, never shared MIB samples.
+# Only structure is cached; all link/MIB values and the whole PON block are read
+# live so registration and traffic changes remain visible between polls.
+airoha_port_topology_json() {
+	local cache="/tmp/airoha-topology.struct"
+	local model="" compatible="" wan_netdev="" lan_count=0 wan_count=0 has_pon=0
+	local record f1 f2 f3 f4 f5 f6 f7 f8 extra entry
+	local ports="" lan_json="" first=1
+
+	if ! _airoha_topology_cache_valid "$cache"; then
+		_airoha_topology_cache_build "$cache" || {
+			printf '{"model":"","compatible":"","lan_netdevs":[],"wan_netdev":"","lan_count":0,"wan_count":0,"has_pon":0,"ports":[],"pon":null}'
+			return
+		}
+		if ! _airoha_topology_cache_valid "$cache"; then
+			printf '{"model":"","compatible":"","lan_netdevs":[],"wan_netdev":"","lan_count":0,"wan_count":0,"has_pon":0,"ports":[],"pon":null}'
+			return
+		fi
+	fi
+
+	while IFS='|' read -r record f1 f2 f3 f4 f5 f6 f7 f8 extra; do
+		case "$record" in
+			model) model="$f1" ;;
+			compatible) compatible="$f1" ;;
+			wan_netdev) wan_netdev="$f1" ;;
+			lan_count) lan_count="$f1" ;;
+			wan_count) wan_count="$f1" ;;
+			has_pon) has_pon="$f1" ;;
+			lan)
+				[ "$first" = 1 ] || lan_json="${lan_json},"
+				first=0
+				lan_json="${lan_json}\"$(_airoha_json_str "$f1")\""
+				;;
+			port)
+				entry=$(_airoha_cached_port_json "$f1" "$f2" "$f3" "$f4" "$f5" "$f6" "$f7" "$f8")
+				[ -z "$ports" ] || ports="$ports,"
+				ports="$ports$entry"
+				;;
+		esac
+	done < "$cache"
 	lan_json="[${lan_json}]"
 
-	[ -n "$wan_netdev" ] && wan_count=1
-
-	local has_pon pon_json
-	has_pon=$(airoha_pon_present)
-	if [ "$has_pon" = "1" ]; then
+	local pon_json
+	if [ "$has_pon" = 1 ]; then
 		local pmode pname pdown pup plos ponu pdev rates
 		rates=$(airoha_pon_rates)
 		pmode=$(airoha_pon_mode_int)

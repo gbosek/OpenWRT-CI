@@ -54,3 +54,6 @@ cp "$GITHUB_WORKSPACE/$source_file" ./files/etc/xg2010g-multiwan-source.json
 if [[ "${WRT_MWAN:-mwan4}" == mwan4 ]]; then
 	cp "$GITHUB_WORKSPACE/$source_file" ./files/etc/xg2010g-mwan4-source.json
 fi
+
+mkdir -p files/etc
+cp "$GITHUB_WORKSPACE/AIROHA-SOURCE.json" files/etc/airoha-build-source.json

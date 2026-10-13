@@ -684,13 +684,7 @@ msgstr ""
 msgid "Link"
 msgstr ""
 
-msgid "Speed / Duplex / PON mode"
-msgstr ""
-
-msgid "PON mode unavailable"
-msgstr ""
-
-msgid "Line rate unavailable"
+msgid "Speed / Duplex"
 msgstr ""
 
 msgid "RX / TX bytes"

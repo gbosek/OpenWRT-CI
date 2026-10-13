@@ -1,59 +1,15 @@
 #!/usr/bin/env python3
 """Apply deterministic LuCI fixes after feeds have been installed."""
 from pathlib import Path
-import hashlib
 import json
 import os
-import re
 import sys
 
 root = Path(sys.argv[1] if len(sys.argv) > 1 else '.')
 profile = os.environ.get('PROFILE', '')
 
-backend = root / 'feeds/luci/modules/luci-base/root/usr/share/rpcd/ucode/luci'
-text = backend.read_text()
-start = text.index('\tgetCPUUsage: {')
-end = text.index('\n\tget', start + 1)
-text = text[:start] + '''	getCPUUsage: {
-		call: function() {
-			const sample = function() {
-				const fh = open('/proc/stat', 'r');
-				if (!fh) return null;
-				const cpus = {};
-				let line;
-				while ((line = fh.read('line')) != null) {
-					const m = match(line, /^(cpu[0-3])\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)(\\s+(\\d+))?/);
-					if (!m) continue;
-					// Guest time is already included in user/nice; do not count it twice.
-					const busy = +m[2] + +m[3] + +m[4] + +m[7] + +m[8] + +(m[10] || 0);
-					cpus[m[1]] = { total: busy + +m[5] + +m[6], busy: busy };
-				}
-				fh.close();
-				return cpus;
-			};
-			const a = sample();
-			sleep(500);
-			const b = sample();
-			if (!a || !b)
-				return { cpuusage: '?' };
-
-			// Report the busiest individual core, not an aggregate across cores.
-			let maxUsage = 0;
-			for (let i = 0; i < 4; i++) {
-				const name = 'cpu' + i;
-				if (!a[name] || !b[name] || b[name].total <= a[name].total || b[name].busy < a[name].busy)
-					return { cpuusage: '?' };
-
-				const total = b[name].total - a[name].total;
-				const busy = b[name].busy - a[name].busy;
-				const usage = max(0, min(100, 100.0 * busy / total));
-				maxUsage = max(maxUsage, usage);
-			}
-
-			return { cpuusage: sprintf('%.1f%%', maxUsage) };
-		}
-	},''' + text[end:]
-backend.write_text(text)
+from cpu_cores import apply_cpu_core_view, refresh_luci_cache_version
+apply_cpu_core_view(root)
 
 page = root / 'feeds/luci/modules/luci-mod-status/htdocs/luci-static/resources/view/status/include/10_system.js'
 text = page.read_text()
@@ -149,14 +105,7 @@ page.write_text(text)
 if profile == 'gemtek_xg2010g':
     # LuCI caches modules under its upstream revision. Local page changes need
     # their own cache key, otherwise a browser can keep the pre-fix module.
-    version_makefile = root / 'feeds/luci/modules/luci-base/src/Makefile'
-    cache_tag = '-xg2010g-ui-' + hashlib.sha256(page.read_bytes()).hexdigest()[:12]
-    version_text, count = re.subn(
-        r'\$\(LUCI_VERSION\)(?:-xg2010g-ui-[0-9a-f]{12})?',
-        '$(LUCI_VERSION)' + cache_tag, version_makefile.read_text())
-    if count != 1:
-        raise SystemExit('Cannot uniquely identify LuCI version generation')
-    version_makefile.write_text(version_text)
+    refresh_luci_cache_version(root)
 
     acl_path = root / 'feeds/luci/modules/luci-mod-status/root/usr/share/rpcd/acl.d/luci-mod-status-index.json'
     acl = json.loads(acl_path.read_text())

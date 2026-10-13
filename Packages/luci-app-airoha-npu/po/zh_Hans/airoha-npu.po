@@ -685,14 +685,8 @@ msgstr "硬件路径"
 msgid "Link"
 msgstr "连接状态"
 
-msgid "Speed / Duplex / PON mode"
-msgstr "协商速率 / 双工 / PON 模式"
-
-msgid "PON mode unavailable"
-msgstr "PON 模式不可用"
-
-msgid "Line rate unavailable"
-msgstr "线路速率不可用"
+msgid "Speed / Duplex"
+msgstr "协商速率 / 双工"
 
 msgid "RX / TX bytes"
 msgstr "接收 / 发送字节"

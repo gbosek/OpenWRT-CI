@@ -2,7 +2,7 @@
 # The standard packet_steering service calls this on boot, config reload,
 # and interface events. A single writer avoids racing the generic allocator.
 board="$(cat /tmp/sysinfo/board_name 2>/dev/null)"
-if [ "$board" = "gemtek,xg2010g" ] && [ "${1:-0}" != "0" ]; then
+if [ "$board" = "gemtek,xg2010g" ] && [ "${1:-0}" = "2" ]; then
 	exec /usr/bin/rps-tune.sh
 fi
 
