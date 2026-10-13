@@ -1,0 +1,18 @@
+{
+  "variant": "XG2010G-MWAN3-NFT",
+  "backend": {
+    "upstream": "Sysrous/mwan3-nft",
+    "upstream_commit": "69db00ebe2e4e8e8fdbf2b1680a0530804ff1896",
+    "package_path": "mwan3",
+    "package_version": "3-r1"
+  },
+  "frontend": {
+    "upstream": "Sysrous/mwan3-nft",
+    "upstream_commit": "69db00ebe2e4e8e8fdbf2b1680a0530804ff1896",
+    "package_path": "luci-app-mwan3",
+    "local_adjustments": [
+      "Use $(TOPDIR)/feeds/luci/luci.mk for package/custom placement."
+    ]
+  },
+  "prior_successful_build": "https://github.com/gbosek/Actions-OpenWrt-AN758X/actions/runs/38331296195"
+}

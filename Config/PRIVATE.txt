@@ -1,20 +1,14 @@
-# XG2010G: mossdef-org/mwan4 + brauliobo/luci-app-mwan4, compatibility forks.
+# Common XG2010G packages; select the multi-WAN implementation separately.
 CONFIG_FEED_pon_userspace=y
 CONFIG_PACKAGE_luci-app-pon-status=y
 CONFIG_PACKAGE_luci-app-airoha-npu=y
 CONFIG_PACKAGE_luci-i18n-airoha-npu-zh-cn=y
-CONFIG_PACKAGE_mwan4=y
-CONFIG_PACKAGE_luci-app-mwan4=y
-CONFIG_PACKAGE_luci-i18n-mwan4-zh-cn=y
-CONFIG_PACKAGE_mwan3=n
-CONFIG_PACKAGE_luci-app-mwan3=n
-CONFIG_PACKAGE_luci-i18n-mwan3-zh-cn=n
 CONFIG_PACKAGE_xg2010g-rps=y
 CONFIG_KERNEL_RPS=y
 CONFIG_PACKAGE_ttyd=y
 CONFIG_PACKAGE_luci-app-ttyd=y
 CONFIG_PACKAGE_luci-i18n-ttyd-zh-cn=y
-# MWAN4 already provides IPv4 source/destination policy routing.
+# The selected multi-WAN implementation provides policy routing.
 CONFIG_PACKAGE_pbr=n
 CONFIG_PACKAGE_luci-app-pbr=n
 CONFIG_PACKAGE_luci-i18n-pbr-zh-cn=n

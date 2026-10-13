@@ -2,10 +2,15 @@
 # Copyright (C) 2026 VIKINGYFY
 
 #CI项目
-name: XG2010G-MOSSDEF-MWAN4
+name: XG2010G-PPE-MultiWAN
+run-name: XG2010G ${{ contains(github.ref_name, 'mwan3-nft') && 'MWAN3-nft' || 'MWAN4' }} with PPE v2
 
 #CI计划
 on:
+  push:
+    branches:
+      - xg2010g-mwan4-ppe
+      - xg2010g-mwan3-nft-ppe
   #手动编译
   workflow_dispatch:
     inputs:
@@ -39,6 +44,7 @@ jobs:
     with:
       #编译配置
       WRT_CONFIG: ${{matrix.CONFIG}}
+      WRT_MWAN: ${{ contains(github.ref_name, 'mwan3-nft') && 'mwan3-nft' || 'mwan4' }}
       #默认主题
       WRT_THEME: aurora
       #默认主机名

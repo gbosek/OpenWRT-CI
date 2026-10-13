@@ -37,6 +37,16 @@ if [ -f "$GITHUB_WORKSPACE/Config/PRIVATE.txt" ]; then
 	cat $GITHUB_WORKSPACE/Config/PRIVATE.txt >> ./.config
 fi
 
+# Select one multi-WAN stack after the common private configuration.
+if [[ "$WRT_CONFIG" == AIROHA ]]; then
+	case "${WRT_MWAN:-mwan4}" in
+		mwan4) multiwan_config=MWAN4.txt ;;
+		mwan3-nft) multiwan_config=MWAN3-NFT.txt ;;
+		*) echo "Unsupported multi-WAN variant: $WRT_MWAN" >&2; exit 1 ;;
+	esac
+	cat "$GITHUB_WORKSPACE/Config/$multiwan_config" >> ./.config
+fi
+
 #手动调整的插件
 if [ -n "$WRT_PACKAGE" ]; then
 	echo -e "$WRT_PACKAGE" >> ./.config

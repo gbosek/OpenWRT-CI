@@ -10,6 +10,10 @@ on:
       WRT_CONFIG:
         required: true
         type: string
+      WRT_MWAN:
+        required: false
+        default: mwan4
+        type: string
       WRT_THEME:
         required: true
         type: string
@@ -52,6 +56,7 @@ on:
 env:
   GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
   WRT_CONFIG: ${{inputs.WRT_CONFIG}}
+  WRT_MWAN: ${{inputs.WRT_MWAN}}
   WRT_THEME: ${{inputs.WRT_THEME}}
   WRT_NAME: ${{inputs.WRT_NAME}}
   WRT_SSID: ${{inputs.WRT_SSID}}
@@ -105,9 +110,24 @@ jobs:
           WRT_CACHE_TARGET="$WRT_TARGET-$WRT_SUBTARGET"
           WRT_CACHE_PREFIX="wrt-$WRT_CACHE_SOURCE-$WRT_CACHE_BRANCH-$WRT_CACHE_TARGET"
           WRT_WIFI=$(grep -oE 'WIFI-(YES|NO)$' <<< "${WRT_CONFIG^^}" || true); WRT_WIFI=${WRT_WIFI:-none}
+          case "$WRT_MWAN" in
+            mwan4)
+              WRT_VARIANT=MOSSDEF-MWAN4-PPE
+              WRT_MWAN_LABEL=MWAN4
+              WRT_MWAN_SOURCE_FILE=MWAN4-SOURCE.json
+              ;;
+            mwan3-nft)
+              WRT_VARIANT=MWAN3-NFT-PPE
+              WRT_MWAN_LABEL=MWAN3-nft
+              WRT_MWAN_SOURCE_FILE=MWAN3-SOURCE.json
+              ;;
+            *) echo "::error::Unsupported multi-WAN variant: $WRT_MWAN"; exit 1 ;;
+          esac
 
           {
-            echo "WRT_INFO=${WRT_SOURCE%%/*}-MOSSDEF-MWAN4"
+            echo "WRT_INFO=${WRT_SOURCE%%/*}-$WRT_VARIANT"
+            echo "WRT_MWAN_LABEL=$WRT_MWAN_LABEL"
+            echo "WRT_MWAN_SOURCE_FILE=$WRT_MWAN_SOURCE_FILE"
             echo "WRT_MARK=${GITHUB_REPOSITORY%%/*}"
             echo "WRT_DATE=$(TZ=UTC-8 date +"%y.%m.%d-%H.%M.%S")"
             echo "WRT_CACHE_PREFIX=$WRT_CACHE_PREFIX"
@@ -197,17 +217,7 @@ jobs:
           make defconfig -j$(nproc) && make clean -j$(nproc)
 
           if [[ "$WRT_CONFIG" == "AIROHA" ]]; then
-            selected_devices=$(grep -E '^CONFIG_TARGET_DEVICE_airoha_an7581_DEVICE_.+=y$' .config || true)
-            if [[ "$selected_devices" != 'CONFIG_TARGET_DEVICE_airoha_an7581_DEVICE_gemtek_xg2010g=y' ]] || grep -qx 'CONFIG_TARGET_ALL_PROFILES=y' .config; then
-              echo '::error::This branch must build only Gemtek XG2010G'
-              exit 1
-            fi
-            for package in mwan4 luci-app-mwan4 luci-i18n-mwan4-zh-cn ttyd luci-app-ttyd luci-i18n-ttyd-zh-cn xg2010g-rps luci-app-pon-status luci-app-airoha-npu; do
-              grep -qx "CONFIG_PACKAGE_${package}=y" .config || {
-                echo "::error::Required package was dropped by defconfig: $package"
-                exit 1
-              }
-            done
+            python3 "$GITHUB_WORKSPACE/Scripts/check-mwan-build.py" --variant "$WRT_MWAN" --config .config
           fi
 
       - name: Download Packages
@@ -223,6 +233,13 @@ jobs:
           cd ./wrt/
 
           make -j$(nproc) || make -j1 V=s
+
+      - name: Verify PPE v2 in compiled kernel
+        if: ${{ !inputs.WRT_TEST && inputs.WRT_CONFIG == 'AIROHA' }}
+        run: |
+          cd ./wrt/
+          python3 "$GITHUB_WORKSPACE/Scripts/check-ppe-build.py" \
+            --manifest-dir ./bin/targets/airoha/an7581 --build-dir ./build_dir
 
       - name: Save Build Cache
         if: ${{ !inputs.WRT_TEST && success() && steps.cache-restore.outputs.cache-hit != 'true' }}
@@ -256,15 +273,11 @@ jobs:
               manifest=$(find ./bin/targets/airoha/an7581 -maxdepth 1 -name '*.manifest' -print -quit)
             fi
             [[ -n "$manifest" && -f "$manifest" ]] || { echo '::error::Firmware manifest missing'; exit 1; }
-            for package in mwan4 luci-app-mwan4 luci-i18n-mwan4-zh-cn ttyd luci-app-ttyd luci-i18n-ttyd-zh-cn xg2010g-rps luci-app-pon-status luci-app-airoha-npu; do
-              grep -q "^${package} - " "$manifest" || {
-                echo "::error::Required package missing from firmware: $package"
-                exit 1
-              }
-            done
+            python3 "$GITHUB_WORKSPACE/Scripts/check-mwan-build.py" --variant "$WRT_MWAN" --manifest "$manifest"
           fi
 
-          cp "$GITHUB_WORKSPACE/MWAN4-SOURCE.json" ./upload/MWAN4-SOURCE.json
+          cp "$GITHUB_WORKSPACE/$WRT_MWAN_SOURCE_FILE" "./upload/$WRT_MWAN_SOURCE_FILE"
+          cp "$GITHUB_WORKSPACE/kernel-patches/airoha/931-net-airoha-keep-PPE-offload-when-NPU-refuses-flow-stats.patch" ./upload/
           cp -f ./.config ./upload/Config-"$WRT_CONFIG"-"$WRT_INFO"-"$WRT_BRANCH"-"$WRT_DATE".txt
 
           if [[ "$WRT_TEST" != 'true' ]]; then
@@ -291,17 +304,18 @@ jobs:
           tag_name: ${{env.WRT_CONFIG}}-${{env.WRT_INFO}}-${{env.WRT_BRANCH}}-${{env.WRT_DATE}}
           files: ./wrt/upload/*.*
           body: |
-            XG2010G-MOSSDEF 专用分支：仅编译 Gemtek XG2010G。
-            MWAN4 后端：mossdef-org/mwan4（gbosek/mwan4 的 xg2010g-compat 分支）。
-            LuCI 前端：brauliobo/luci-app-mwan4（gbosek/luci-app-mwan4 的 xg2010g-compat 分支）。
-            本版不使用 claus778-mwan4。接口兼容改动和准确提交见 MWAN4-SOURCE.json。
-            切换实现后需在 LuCI 重新设置 WAN/权重/策略；不兼容旧配置会另行备份。
-            包含 MWAN4/中文界面、ttyd/中文界面、RPS 持久化和定制状态页。
+            XG2010G ${{env.WRT_MWAN_LABEL}} 专用固件：仅编译 Gemtek XG2010G。
+            多 WAN 方案：${{env.WRT_MWAN_LABEL}}，准确来源见附件 ${{env.WRT_MWAN_SOURCE_FILE}}。
+            包含多 WAN 中文界面、Airoha NPU r10、ttyd 中文界面、RPS 持久化和现有温度/PON 状态页。
+            已加入 [PATCH net v2] net: airoha: keep PPE offload when NPU refuses flow stats。
+            CONFIG_NET_AIROHA_FLOW_STATS=y；发布前检查内核源码、编译对象和固件软件包清单。
+            切换多 WAN 实现后，需要按当前线路重新设置接口和策略。
             硬件卸载和双 WAN 功能仍需刷入后实机确认。
 
             源码：${{env.WRT_REPO}}
             分支：${{env.WRT_BRANCH}}
             提交：${{env.WRT_HASH}}
+            构建配置提交：${{github.sha}}
 
             配置：${{env.WRT_CONFIG}}
             平台：${{env.WRT_TARGET}}

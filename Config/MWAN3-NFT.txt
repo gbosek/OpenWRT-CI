@@ -1,0 +1,8 @@
+# XG2010G: native nftables MWAN3 with its matching LuCI frontend.
+# Both packages are pinned to Sysrous/mwan3-nft (see MWAN3-SOURCE.json).
+CONFIG_PACKAGE_mwan3=y
+CONFIG_PACKAGE_luci-app-mwan3=y
+CONFIG_PACKAGE_luci-i18n-mwan3-zh-cn=y
+# CONFIG_PACKAGE_mwan4 is not set
+# CONFIG_PACKAGE_luci-app-mwan4 is not set
+# CONFIG_PACKAGE_luci-i18n-mwan4-zh-cn is not set
