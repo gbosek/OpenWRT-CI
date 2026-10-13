@@ -202,7 +202,7 @@ jobs:
               echo '::error::This branch must build only Gemtek XG2010G'
               exit 1
             fi
-            for package in mwan4 luci-app-mwan4 luci-i18n-mwan4-zh-cn ttyd luci-app-ttyd luci-i18n-ttyd-zh-cn xg2010g-rps luci-app-pon-status luci-app-airoha-npu; do
+            for package in mwan4 luci-app-mwan4 luci-i18n-mwan4-zh-cn ttyd luci-app-ttyd luci-i18n-ttyd-zh-cn xg2010g-rps luci-app-pon-status luci-app-airoha-npu bridger tc-full ethtool-full kmod-nf-flow kmod-nft-offload airoha-en7581-npu-firmware; do
               grep -qx "CONFIG_PACKAGE_${package}=y" .config || {
                 echo "::error::Required package was dropped by defconfig: $package"
                 exit 1
@@ -256,12 +256,14 @@ jobs:
               manifest=$(find ./bin/targets/airoha/an7581 -maxdepth 1 -name '*.manifest' -print -quit)
             fi
             [[ -n "$manifest" && -f "$manifest" ]] || { echo '::error::Firmware manifest missing'; exit 1; }
-            for package in mwan4 luci-app-mwan4 luci-i18n-mwan4-zh-cn ttyd luci-app-ttyd luci-i18n-ttyd-zh-cn xg2010g-rps luci-app-pon-status luci-app-airoha-npu; do
+            for package in mwan4 luci-app-mwan4 luci-i18n-mwan4-zh-cn ttyd luci-app-ttyd luci-i18n-ttyd-zh-cn xg2010g-rps luci-app-pon-status luci-app-airoha-npu bridger tc-full ethtool-full kmod-nf-flow kmod-nft-offload airoha-en7581-npu-firmware; do
               grep -q "^${package} - " "$manifest" || {
                 echo "::error::Required package missing from firmware: $package"
                 exit 1
               }
             done
+            python3 "$GITHUB_WORKSPACE/Scripts/check-ppe-build.py" \
+              --manifest-dir "$(dirname "$manifest")" --build-dir ./build_dir
           fi
 
           cp "$GITHUB_WORKSPACE/MWAN4-SOURCE.json" ./upload/MWAN4-SOURCE.json
