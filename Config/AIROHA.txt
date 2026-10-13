@@ -4,3 +4,9 @@ CONFIG_TARGET_airoha_an7581=y
 #仅编译 Gemtek XG2010G，保留多配置模式但只选一个设备。
 # CONFIG_TARGET_ALL_PROFILES is not set
 CONFIG_TARGET_DEVICE_airoha_an7581_DEVICE_gemtek_xg2010g=y
+CONFIG_PACKAGE_airoha-en7581-npu-firmware=y
+CONFIG_PACKAGE_kmod-nf-flow=y
+CONFIG_PACKAGE_kmod-nft-offload=y
+CONFIG_PACKAGE_bridger=y
+CONFIG_PACKAGE_tc-full=y
+CONFIG_PACKAGE_ethtool-full=y
