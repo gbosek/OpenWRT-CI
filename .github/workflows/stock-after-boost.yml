@@ -1,0 +1,57 @@
+name: XG2010G stock after boost
+run-name: XG2010G MWAN4 stock 500–1200MHz (after four boost builds)
+on:
+  push:
+    branches: [xg2010g-mwan4-stock-after-boost]
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: write
+jobs:
+  wait:
+    name: Wait for all four boost firmware builds
+    runs-on: ubuntu-24.04
+    timeout-minutes: 340
+    steps:
+      - uses: actions/checkout@v5
+      - name: Wait for successful latest boost branch runs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 Scripts/wait-for-boost.py --manifest STOCK-BUILD-DEPS.json
+  stock:
+    name: Stock ${{ matrix.NPU }}
+    needs: wait
+    strategy:
+      fail-fast: false
+      matrix:
+        NPU: [naoki, luanmuc]
+    uses: ./.github/workflows/WRT-CORE.yml
+    with:
+      #编译配置
+      WRT_CONFIG: AIROHA
+      WRT_NPU: ${{ matrix.NPU }}
+      WRT_MWAN: mwan4
+      #默认主题
+      WRT_THEME: aurora
+      #默认主机名
+      WRT_NAME: OWRT
+      #默认WIFI名称
+      WRT_SSID: OWRT
+      #默认WIFI密码
+      WRT_WORD: 12345678
+      #默认地址
+      WRT_IP: 192.168.10.1
+      #默认密码，仅作提示，修改无用
+      WRT_PW: 无
+      #源码链接
+      WRT_REPO: https://github.com/VIKINGYFY/immortalwrt.git
+      #源码分支
+      WRT_BRANCH: owrt
+      #以 AIROHA-VIKINGYFY-owrt-26.10.08-11.11.17 的源码提交为基线
+      WRT_REVISION: a38520034ee4bdd25dd6e88c4c59261f289ee17e
+      #源码名称
+      WRT_SOURCE: VIKINGYFY/immortalwrt
+      #插件调整
+      WRT_PACKAGE: ''
+      #仅输出配置文件
+      WRT_TEST: false

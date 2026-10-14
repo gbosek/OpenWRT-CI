@@ -3,14 +3,14 @@
 
 #CI项目
 name: XG2010G-PPE-MultiWAN
-run-name: XG2010G ${{ contains(github.ref_name, 'mwan3-nft') && 'MWAN3-nft' || 'MWAN4' }} with compatibility boost
+run-name: XG2010G ${{ contains(github.ref_name, 'mwan3-nft') && 'MWAN3-nft' || 'MWAN4' }} stock 1200MHz
 
 #CI计划
 on:
   push:
     branches:
-      - xg2010g-mwan4-naoki-boost
-      - xg2010g-mwan4-luanmuc-boost
+      - xg2010g-mwan4-stock-naoki-manual
+      - xg2010g-mwan4-stock-luanmuc-manual
   #手动编译
   workflow_dispatch:
     inputs:

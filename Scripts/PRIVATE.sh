@@ -46,7 +46,7 @@ kernel_config=./target/linux/airoha/an7581/config-6.18
 sed -i '/^# CONFIG_IP_ROUTE_MULTIPATH is not set$/d; /^CONFIG_IP_ROUTE_MULTIPATH=/d' "$kernel_config"
 echo 'CONFIG_IP_ROUTE_MULTIPATH=y' >> "$kernel_config"
 python3 "$GITHUB_WORKSPACE/Scripts/apply-ppe-kernel.py" .
-python3 "$GITHUB_WORKSPACE/Scripts/apply-compatible-boost.py" .
+python3 "$GITHUB_WORKSPACE/Scripts/apply-stock-cpu.py" .
 mkdir -p files/sbin
 install -m 0755 "$GITHUB_WORKSPACE/files/sbin/cpuusage" files/sbin/cpuusage
 install -m 0755 "$GITHUB_WORKSPACE/files/sbin/tempinfo" files/sbin/tempinfo

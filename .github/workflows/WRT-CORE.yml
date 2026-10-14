@@ -87,7 +87,7 @@ jobs:
         uses: actions/checkout@main
 
       - name: Check compatibility boost and NPU adapters
-        run: python3 CPU/tests/run.py
+        run: python3 CPU/tests/stock-run.py
 
       - name: Initialization Environment
         env:
@@ -133,7 +133,7 @@ jobs:
           esac
 
           {
-            echo "WRT_INFO=${WRT_SOURCE%%/*}-$WRT_VARIANT-${WRT_NPU^^}-COMPAT1400"
+            echo "WRT_INFO=${WRT_SOURCE%%/*}-$WRT_VARIANT-${WRT_NPU^^}-STOCK1200"
             echo "WRT_MWAN_LABEL=$WRT_MWAN_LABEL"
             echo "WRT_MWAN_SOURCE_FILE=$WRT_MWAN_SOURCE_FILE"
             echo "WRT_MARK=${GITHUB_REPOSITORY%%/*}"
@@ -253,7 +253,7 @@ jobs:
         if: ${{ !inputs.WRT_TEST && inputs.WRT_CONFIG == 'AIROHA' && inputs.WRT_MWAN == 'mwan4' }}
         run: |
           python3 "$GITHUB_WORKSPACE/Scripts/check-xg2010g-build.py" ./wrt
-          python3 "$GITHUB_WORKSPACE/Scripts/check-compatible-boost.py" ./wrt
+          python3 "$GITHUB_WORKSPACE/Scripts/check-stock-cpu.py" ./wrt
 
       - name: Save Build Cache
         if: ${{ !inputs.WRT_TEST && success() && steps.cache-restore.outputs.cache-hit != 'true' }}
@@ -293,7 +293,6 @@ jobs:
           cp ./files/etc/airoha-build-source.json ./upload/AIROHA-SOURCE.json
           cp "$GITHUB_WORKSPACE/CPU-BOOST-SOURCE.json" ./upload/
           cp "$GITHUB_WORKSPACE/CPU-USAGE-SOURCE.json" ./upload/
-          cp "$GITHUB_WORKSPACE/kernel-patches/airoha/999-xg2010g-bl31-compatible-overclock.patch" ./upload/
           cp "$GITHUB_WORKSPACE/$WRT_MWAN_SOURCE_FILE" "./upload/$WRT_MWAN_SOURCE_FILE"
           cp "$GITHUB_WORKSPACE/kernel-patches/airoha/931-net-airoha-keep-PPE-offload-when-NPU-refuses-flow-stats.patch" ./upload/
           cp -f ./.config ./upload/Config-"$WRT_CONFIG"-"$WRT_INFO"-"$WRT_BRANCH"-"$WRT_DATE".txt
@@ -324,7 +323,7 @@ jobs:
           body: |
             XG2010G ${{env.WRT_MWAN_LABEL}} 专用固件：仅编译 Gemtek XG2010G。
             多 WAN 方案：${{env.WRT_MWAN_LABEL}}，准确来源见附件 ${{env.WRT_MWAN_SOURCE_FILE}}。
-            包含多 WAN 中文界面、${{env.WRT_NPU}} NPU LuCI（准确来源见 AIROHA-SOURCE.json）、ttyd 中文界面、仓库原生四核 CPU 使用率、RPS 重启恢复、500–1400MHz 动态兼容超频（新实现，硬件稳定性未验证）和现有温度/PON 状态页。
+            包含多 WAN 中文界面、${{env.WRT_NPU}} NPU LuCI（准确来源见 AIROHA-SOURCE.json）、ttyd 中文界面、仓库原生四核 CPU 使用率、RPS 重启恢复、原生 BL31 500–1200MHz 动态调频（不超频）和现有温度/PON 状态页。
             已加入 [PATCH net v2] net: airoha: keep PPE offload when NPU refuses flow stats。
             CONFIG_NET_AIROHA_FLOW_STATS=y；发布前检查内核源码、编译对象和固件软件包清单。
             切换多 WAN 实现后，需要按当前线路重新设置接口和策略。
