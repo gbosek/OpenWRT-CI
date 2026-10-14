@@ -7,7 +7,7 @@ if [[ "$WRT_CONFIG" != "AIROHA" ]]; then
 fi
 
 mkdir -p ./package/custom
-packages=(luci-app-pon-status luci-app-airoha-npu xg2010g-rps)
+packages=(luci-app-pon-status xg2010g-rps)
 case "${WRT_MWAN:-mwan4}" in
 	mwan4)
 		packages+=(mwan4 luci-app-mwan4)
@@ -34,6 +34,8 @@ for name in "${packages[@]}"; do
 	cp -a "$GITHUB_WORKSPACE/Packages/$name" ./package/custom/
 done
 
+python3 "$GITHUB_WORKSPACE/Scripts/select-npu.py" . --variant "${WRT_NPU:-naoki}"
+
 # Git checkouts on Windows can lose executable bits and gain CRLF endings.
 find ./package/custom -type f -exec dos2unix {} +
 find ./package/custom -type f -path '*/root/etc/init.d/*' -exec chmod 0755 {} +
@@ -44,6 +46,11 @@ kernel_config=./target/linux/airoha/an7581/config-6.18
 sed -i '/^# CONFIG_IP_ROUTE_MULTIPATH is not set$/d; /^CONFIG_IP_ROUTE_MULTIPATH=/d' "$kernel_config"
 echo 'CONFIG_IP_ROUTE_MULTIPATH=y' >> "$kernel_config"
 python3 "$GITHUB_WORKSPACE/Scripts/apply-ppe-kernel.py" .
+python3 "$GITHUB_WORKSPACE/Scripts/apply-compatible-boost.py" .
+mkdir -p files/sbin
+install -m 0755 "$GITHUB_WORKSPACE/files/sbin/cpuusage" files/sbin/cpuusage
+install -m 0755 "$GITHUB_WORKSPACE/files/sbin/tempinfo" files/sbin/tempinfo
+cp "$GITHUB_WORKSPACE/CPU-USAGE-SOURCE.json" files/etc/cpuusage-source.json
 
 install -m 0755 "$GITHUB_WORKSPACE/Scripts/tempinfo" ./package/emortal/autocore/files/tempinfo
 dos2unix ./package/emortal/autocore/files/tempinfo
@@ -56,4 +63,3 @@ if [[ "${WRT_MWAN:-mwan4}" == mwan4 ]]; then
 fi
 
 mkdir -p files/etc
-cp "$GITHUB_WORKSPACE/AIROHA-SOURCE.json" files/etc/airoha-build-source.json
