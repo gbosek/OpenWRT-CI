@@ -200,8 +200,10 @@ jobs:
         run: |
           cd ./wrt/
 
+          python3 "$GITHUB_WORKSPACE/Scripts/select-pon.py" . --variant "$WRT_NPU" --phase feed
           ./scripts/feeds update -a
           ./scripts/feeds install -a
+          python3 "$GITHUB_WORKSPACE/Scripts/select-pon.py" . --variant "$WRT_NPU" --phase verify
 
       - name: Custom Packages
         run: |
@@ -222,7 +224,9 @@ jobs:
 
           $GITHUB_WORKSPACE/Scripts/Settings.sh
 
+          python3 "$GITHUB_WORKSPACE/Scripts/select-pon.py" . --variant "$WRT_NPU" --phase config
           make defconfig -j$(nproc) && make clean -j$(nproc)
+          python3 "$GITHUB_WORKSPACE/Scripts/check-pon-build.py" . --variant "$WRT_NPU" --config-only
 
           if [[ "$WRT_CONFIG" == "AIROHA" ]]; then
             python3 "$GITHUB_WORKSPACE/Scripts/check-mwan-build.py" --variant "$WRT_MWAN" --config .config
@@ -254,6 +258,7 @@ jobs:
         run: |
           python3 "$GITHUB_WORKSPACE/Scripts/check-xg2010g-build.py" ./wrt
           python3 "$GITHUB_WORKSPACE/Scripts/check-stock-cpu.py" ./wrt
+          python3 "$GITHUB_WORKSPACE/Scripts/check-pon-build.py" ./wrt --variant "$WRT_NPU"
 
       - name: Save Build Cache
         if: ${{ !inputs.WRT_TEST && success() && steps.cache-restore.outputs.cache-hit != 'true' }}
@@ -292,6 +297,9 @@ jobs:
 
           cp ./files/etc/airoha-build-source.json ./upload/AIROHA-SOURCE.json
           cp "$GITHUB_WORKSPACE/CPU-BOOST-SOURCE.json" ./upload/
+          if [ -f ./files/etc/pon-build-source.json ]; then
+            cp ./files/etc/pon-build-source.json ./upload/PON-SOURCE.json
+          fi
           cp "$GITHUB_WORKSPACE/CPU-USAGE-SOURCE.json" ./upload/
           cp "$GITHUB_WORKSPACE/$WRT_MWAN_SOURCE_FILE" "./upload/$WRT_MWAN_SOURCE_FILE"
           cp "$GITHUB_WORKSPACE/kernel-patches/airoha/931-net-airoha-keep-PPE-offload-when-NPU-refuses-flow-stats.patch" ./upload/

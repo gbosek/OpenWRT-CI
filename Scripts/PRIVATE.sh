@@ -7,7 +7,8 @@ if [[ "$WRT_CONFIG" != "AIROHA" ]]; then
 fi
 
 mkdir -p ./package/custom
-packages=(luci-app-pon-status xg2010g-rps)
+packages=(xg2010g-rps)
+[[ "${WRT_NPU:-naoki}" != naoki ]] && packages+=(luci-app-pon-status)
 case "${WRT_MWAN:-mwan4}" in
 	mwan4)
 		packages+=(mwan4 luci-app-mwan4)
