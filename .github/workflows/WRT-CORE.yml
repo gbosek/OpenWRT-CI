@@ -229,7 +229,7 @@ jobs:
           python3 "$GITHUB_WORKSPACE/Scripts/check-pon-build.py" . --variant "$WRT_NPU" --config-only
 
           if [[ "$WRT_CONFIG" == "AIROHA" ]]; then
-            python3 "$GITHUB_WORKSPACE/Scripts/check-mwan-build.py" --variant "$WRT_MWAN" --config .config
+            python3 "$GITHUB_WORKSPACE/Scripts/check-mwan-build.py" --variant "$WRT_MWAN" --npu "$WRT_NPU" --config .config
           fi
 
       - name: Download Packages
@@ -292,7 +292,7 @@ jobs:
               manifest=$(find ./bin/targets/airoha/an7581 -maxdepth 1 -name '*.manifest' -print -quit)
             fi
             [[ -n "$manifest" && -f "$manifest" ]] || { echo '::error::Firmware manifest missing'; exit 1; }
-            python3 "$GITHUB_WORKSPACE/Scripts/check-mwan-build.py" --variant "$WRT_MWAN" --manifest "$manifest"
+            python3 "$GITHUB_WORKSPACE/Scripts/check-mwan-build.py" --variant "$WRT_MWAN" --npu "$WRT_NPU" --manifest "$manifest"
           fi
 
           cp ./files/etc/airoha-build-source.json ./upload/AIROHA-SOURCE.json
