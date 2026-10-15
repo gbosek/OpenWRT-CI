@@ -33,7 +33,7 @@ for manifest in manifest_dir.glob('*.manifest'):
     assert re.match(r'^20261013-(?:r)?2$', pkgs['xg2010g-rps']), 'RPS singleton/read fix missing'
     assert re.match(r'^0\.1\.1-(?:r)?8$', pkgs['mwan4']), 'Native MWAN4 init fix missing'
     assert re.match(r'^1\.0\.0-(?:r)?12$', pkgs['luci-app-mwan4']), 'MWAN4 stop confirmation missing'
-    assert re.search(r'-(?:r)?7$', pkgs['luci-app-pon-status']), 'PON fullwidth-v2 package missing'
+    assert re.search(r'-(?:r)?8$', pkgs['luci-app-pon-status']), 'PON fullwidth-v3 package missing'
     assert not any(n in pkgs for n in ('mwan3', 'mwan3-nft', 'luci-app-mwan3')), 'Mixed MWAN stacks'
     assert re.match(version_pattern, pkgs['luci-app-airoha-npu']), 'Wrong NPU package/local adapter revision'
     assert not any(n in pkgs for n in ('luci-app-nlbwmon','luci-app-statistics')), 'Removed monitor/statistics plugin present'
@@ -71,7 +71,7 @@ pon = installed / 'www/luci-static/resources/view/status/include/15_xg2010g_pon.
 assert pon.read_bytes() == (repo / 'UI/15_pon.js').read_bytes(), 'Dedicated PON layout missing'
 assert not (pon.parent / '15_pon.js').exists(), 'Legacy PON include remains'
 layout = json.loads((installed / 'etc/pon-status-layout.json').read_text())
-assert layout['layout'] == 'fullwidth-v2' and layout['sha256'] == hashlib.sha256(pon.read_bytes()).hexdigest()
+assert layout['layout'] == 'fullwidth-v3' and layout['sha256'] == hashlib.sha256(pon.read_bytes()).hexdigest()
 assert (installed / 'www/luci-static/resources/view/status/index.js').read_bytes() == (repo / 'UI/status-index.js').read_bytes(), 'Independent overview loading missing'
 overview = (installed / 'www/luci-static/resources/view/mwan4/network/overview.js').read_text()
 assert 'Service stopped' in overview and 'Service did not reach the requested state.' in overview
@@ -79,5 +79,5 @@ assert 'create_iface_rules(iface, l3_device)' in (installed / 'lib/mwan4/mwan4.u
 driver_meta = json.loads((repo / 'AN7581-DRIVER-FIXES-SOURCE.json').read_text())
 driver_meta.update(project='ci', selected_baseline=driver_meta['baselines']['ci'])
 assert json.loads((installed / 'etc/an7581-driver-fixes.json').read_text()) == driver_meta, 'Installed upstream driver-fix provenance mismatch'
-print('Verified MWAN4 stop/native-init fixes, RPS singleton/read fix, PON fullwidth-v2, WOL and Argon configuration')
+print('Verified MWAN4 stop/native-init fixes, RPS singleton/read fix, PON fullwidth-v3, WOL and Argon configuration')
 print(variant + ': Latest Airoha snapshot, MWAN4, Chinese UI, four CPU cores, RPS recovery and CPU/PON/LAN1/LAN2 temperature script verified in staged rootfs')
