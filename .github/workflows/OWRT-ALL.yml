@@ -29,7 +29,7 @@ permissions: write-all
 #CI任务
 jobs:
   config:
-    name: ${{matrix.CONFIG}}
+    name: ${{matrix.CONFIG}} / ${{matrix.NPU}}
     strategy:
       fail-fast: false
       #max-parallel: 3
