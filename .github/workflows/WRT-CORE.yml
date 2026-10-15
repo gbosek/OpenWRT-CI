@@ -351,6 +351,7 @@ jobs:
           if [ -f ./files/etc/pon-build-source.json ]; then cp ./files/etc/pon-build-source.json ./upload/PON-SOURCE.json; fi
           cp "$GITHUB_WORKSPACE/CPU-BOOST-SOURCE.json" ./upload/
           cp "$GITHUB_WORKSPACE/CPU-USAGE-SOURCE.json" ./upload/
+          cp "$GITHUB_WORKSPACE/PLUGIN-COMPATIBILITY-VALIDATION.json" ./upload/
           cp "$GITHUB_WORKSPACE/kernel-patches/airoha/999-xg2010g-bl31-compatible-overclock.patch" ./upload/
           cp "$GITHUB_WORKSPACE/$WRT_MWAN_SOURCE_FILE" "./upload/$WRT_MWAN_SOURCE_FILE"
           cp "$GITHUB_WORKSPACE/kernel-patches/airoha/931-net-airoha-keep-PPE-offload-when-NPU-refuses-flow-stats.patch" ./upload/
@@ -386,6 +387,7 @@ jobs:
             已加入 [PATCH net v2] net: airoha: keep PPE offload when NPU refuses flow stats。
             新增上游 QDMA 配置重试、NPU 看门狗释放顺序修复；RX31 修复由原生 6.18.54 提供。发布前核对实际源码与 ARM64 对象，报告见 AN7581-DRIVER-FIXES-*.json。
             包含 PON fullwidth-v2 满宽布局、MWAN4 停止反馈及 RPS 单实例修复。
+            已修复 naoki ONU 对 firewall4 zone-device 卸载补丁的依赖，保留原 FullCone；共享 cpufreq 恢复原 ondemand 参数。
             CONFIG_NET_AIROHA_FLOW_STATS=y；发布前检查内核源码、编译对象和固件软件包清单。
             切换多 WAN 实现后，需要按当前线路重新设置接口和策略。
             硬件卸载和双 WAN 功能仍需刷入后实机确认。

@@ -3,7 +3,7 @@
 
 #CI项目
 name: XG2010G-PPE-MultiWAN
-run-name: XG2010G MWAN4 + upstream driver fixes - naoki and luanmuc
+run-name: XG2010G MWAN4 + reviewed ONU and CPU compatibility - naoki and luanmuc
 
 #CI计划
 on:
