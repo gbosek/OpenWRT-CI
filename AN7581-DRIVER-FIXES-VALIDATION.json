@@ -38,5 +38,25 @@
       "scope": "Actual TRTCM function with host bus/readback fixtures; source and ARM64 object checks; hardware stability requires device testing"
     }
   },
-  "device_tested": false
+  "device_tested": false,
+  "regression_checks": {
+    "ci": {
+      "mwan4_native_ucode": 13,
+      "mwan4_service_control_browser": 7,
+      "pon_layout_browser": 8,
+      "pon_themes": [
+        "aurora",
+        "argon"
+      ],
+      "pon_viewports": [
+        1440,
+        390
+      ],
+      "installer_and_cpu_policy": "passed"
+    },
+    "actions": {
+      "driver_installer": "passed",
+      "existing_boost_npu_pon_rps_ppe_checks": "retained"
+    }
+  }
 }
