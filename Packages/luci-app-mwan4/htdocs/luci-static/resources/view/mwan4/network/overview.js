@@ -31,6 +31,8 @@ const callControl = rpc.declare({
 	expect: { }
 });
 
+let controlInFlight = false;
+let runtimeGeneration = 0;
 let hasOperatorAccess = false;
 let hasAdvancedAccess = false;
 let hasDiagnosticsAccess = false;
@@ -96,17 +98,83 @@ function renderServiceActions() {
 
 }
 
-function runMwan4(args, button) {
-	if (!hasOperatorAccess)
-		return Promise.resolve();
+function refreshRuntime() {
+	let generation = ++runtimeGeneration;
+	let commandCenter = byId('mwan4-command-center');
+	let wanWorkspace = byId('mwan4-wan-workspace');
 
-	return withButtonBusy(button, function() { return callControl(args[0], args[1] || null); }).then(function(result) {
-		let message = mwan4Common.rpcErrorMessage(result, _('Control request failed'));
-		if (message)
-			throw new Error(message);
+	setBusy(commandCenter, true);
+	setBusy(wanWorkspace, true);
+
+	return Promise.all([
+		callStatus(),
+		Promise.resolve({ supported: false })
+	]).then(function(results) {
+		if (generation != runtimeGeneration)
+			return results[0];
+		let result = results[0] || {};
+		let counterResult = results[1] || {};
+
+		if (commandCenter)
+			commandCenter.replaceWith(renderCommandCenter(result || {}, setupProgress()));
+		if (wanWorkspace)
+			wanWorkspace.replaceChildren(
+				E('div', { class: 'mwan4-panel-heading' }, [
+					E('div', [
+						E('span', { class: 'mwan4-eyebrow' }, [ _('WAN workspace') ]),
+						E('h3', { id: 'mwan4-wan-workspace-title' }, [ _('WAN health matrix') ])
+					]),
+					hasDiagnosticsAccess ? E('a', { class: 'btn cbi-button cbi-button-neutral', href: L.url('admin/network/mwan4/diagnostics') }, [ _('Open Diagnostics') ]) : ''
+				]),
+				renderWanWorkspace(result || {}, counterResult)
+			);
+		return result;
+	}).finally(function() {
+		if (generation == runtimeGeneration) {
+			setBusy(byId('mwan4-command-center'), false);
+			setBusy(byId('mwan4-wan-workspace'), false);
+		}
+	});
+}
+
+function runMwan4(args, button) {
+	if (!hasOperatorAccess || controlInFlight)
+		return Promise.resolve(false);
+
+	controlInFlight = true;
+	++runtimeGeneration; // Discard any poll that started before this control action.
+	return withButtonBusy(button, function() {
+		return callControl(args[0], args[1] || null).then(function(result) {
+			let message = mwan4Common.rpcErrorMessage(result, _('Control request failed'));
+			if (message || !result || result.ok !== true)
+				throw new Error(message || _('Control request was not acknowledged'));
+
+			let expected = args[0] == 'stop' ? false : true;
+			let serviceAction = [ 'start', 'stop', 'restart' ].includes(args[0]);
+			function confirm(attempt) {
+				return refreshRuntime().then(function(status) {
+					if (!serviceAction || ((status || {}).diagnostics || {}).service_running === expected)
+						return true;
+					if (attempt >= 10)
+						throw new Error(_('Service did not reach the requested state. Check the system log.'));
+					return new Promise(function(resolve) { window.setTimeout(resolve, 500); }).then(function() { return confirm(attempt + 1); });
+				});
+			}
+			return confirm(0);
+		}).then(function() {
+			let messages = {
+				start: _('MultiWAN 4 service started.'),
+				stop: _('MultiWAN 4 service stopped.'),
+				restart: _('MultiWAN 4 service restarted.')
+			};
+			if (messages[args[0]])
+				ui.addNotification(null, E('p', [ messages[args[0]] ]), 'info');
+			return true;
+		});
 	}).catch(function(e) {
 		ui.addNotification(null, E('p', [ _('Control failed: %s').format(e.message || e) ]), 'danger');
-	});
+		return false;
+	}).finally(function() { controlInFlight = false; });
 }
 
 function saveApplyRestart() {
@@ -115,7 +183,9 @@ function saveApplyRestart() {
 	return withBusy(root, function() { return uci.save()
 		.then(function() { return uci.apply(10); })
 		.then(function() { return hasOperatorAccess ? runMwan4([ 'restart' ]) : null; })
-		.then(function() {
+		.then(function(result) {
+			if (hasOperatorAccess && result !== true)
+				throw new Error(_('Control request failed'));
 			ui.addNotification(null, E('p', [ hasOperatorAccess
 				? _('MultiWAN 4 settings applied and service restarted.')
 				: _('MultiWAN 4 settings applied. Service restart is hidden by this session ACL.') ]), hasOperatorAccess ? 'info' : 'warning');
@@ -575,6 +645,8 @@ function runtimeWarnings(status) {
 }
 
 function liveInterfaceCounts(status) {
+	if (((status || {}).diagnostics || {}).service_running === false)
+		return { names: [], online: 0, total: 0, offline: 0 };
 	let interfaces = (status || {}).interfaces || {};
 	let names = Object.keys(interfaces).filter(function(name) {
 		return interfaces[name].enabled !== false && interfaces[name].enabled != '0';
@@ -1249,6 +1321,24 @@ function commandCenterState(status, progress) {
 	let live = liveInterfaceCounts(status);
 	let warnings = runtimeWarnings(status);
 
+	if (((status || {}).diagnostics || {}).service_running === false) {
+		return {
+			action: hasOperatorAccess
+				? { label: _('Start'), buttonClass: 'cbi-button-apply', click: function(ev) { return runMwan4([ 'start' ], eventButton(ev)); } }
+				: { label: _('Review WAN links'), buttonClass: 'cbi-button-neutral', click: function() { return scrollToSection('mwan4-wan-workspace'); } },
+			currentBody: _('Saved WAN links and policies are preserved.'),
+			currentTitle: _('Service stopped'),
+			nextBody: _('Start the service to resume WAN tracking and policy routing.'),
+			nextTitle: _('Start'),
+			pillClass: 'mwan4-muted',
+			riskBody: _('mwan4 is stopped. Traffic follows routing outside mwan4.'),
+			riskTitle: _('Policy routing stopped'),
+			statusLabel: _('Stopped'),
+			summary: _('mwan4 is stopped. Traffic follows routing outside mwan4.'),
+			tone: 'stopped'
+		};
+	}
+
 	if (!progress.hasLinks) {
 		return {
 			action:       { label: _('Add first WAN link'), buttonClass: 'cbi-button-add', click: function() { return showInterfaceModal(null); } },
@@ -1891,34 +1981,9 @@ return view.extend({
 		};
 
 		poll.add(function() {
-			let commandCenter = byId('mwan4-command-center');
-			let wanWorkspace = byId('mwan4-wan-workspace');
-
-			setBusy(commandCenter, true);
-			setBusy(wanWorkspace, true);
-
-			return Promise.all([
-				L.resolveDefault(callStatus(), {}),
-				Promise.resolve({ supported: false })
-			]).then(function(results) {
-				let result = results[0] || {};
-				let counterResult = results[1] || {};
-
-				if (commandCenter)
-					commandCenter.replaceWith(renderCommandCenter(result || {}, setupProgress()));
-				if (wanWorkspace)
-					wanWorkspace.replaceChildren(
-						E('div', { class: 'mwan4-panel-heading' }, [
-							E('div', [
-								E('span', { class: 'mwan4-eyebrow' }, [ _('WAN workspace') ]),
-								E('h3', { id: 'mwan4-wan-workspace-title' }, [ _('WAN health matrix') ])
-							]),
-							hasDiagnosticsAccess ? E('a', { class: 'btn cbi-button cbi-button-neutral', href: L.url('admin/network/mwan4/diagnostics') }, [ _('Open Diagnostics') ]) : ''
-						]),
-						renderWanWorkspace(result || {}, counterResult)
-					);
-				setBusy(byId('mwan4-wan-workspace'), false);
-			});
+			if (controlInFlight)
+				return Promise.resolve();
+			return refreshRuntime();
 		});
 
 		return E('div', { id: 'mwan4-app', 'aria-busy': 'false' }, [

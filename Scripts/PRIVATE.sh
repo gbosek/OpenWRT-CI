@@ -35,6 +35,8 @@ for name in "${packages[@]}"; do
 done
 
 python3 "$GITHUB_WORKSPACE/Scripts/select-npu.py" . --variant "${WRT_NPU:-naoki}"
+python3 "$GITHUB_WORKSPACE/Scripts/patch-pon-status.py" .
+python3 "$GITHUB_WORKSPACE/Scripts/patch-fast-overview.py" .
 
 # Git checkouts on Windows can lose executable bits and gain CRLF endings.
 find ./package/custom -type f -exec dos2unix {} +
@@ -46,6 +48,7 @@ kernel_config=./target/linux/airoha/an7581/config-6.18
 sed -i '/^# CONFIG_IP_ROUTE_MULTIPATH is not set$/d; /^CONFIG_IP_ROUTE_MULTIPATH=/d' "$kernel_config"
 echo 'CONFIG_IP_ROUTE_MULTIPATH=y' >> "$kernel_config"
 python3 "$GITHUB_WORKSPACE/Scripts/apply-ppe-kernel.py" .
+python3 "$GITHUB_WORKSPACE/Scripts/apply-driver-fixes.py" . --project ci
 python3 "$GITHUB_WORKSPACE/Scripts/apply-compatible-boost.py" .
 mkdir -p files/sbin
 install -m 0755 "$GITHUB_WORKSPACE/files/sbin/cpuusage" files/sbin/cpuusage

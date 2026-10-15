@@ -299,6 +299,11 @@ async function renderOverview(page, options) {
 		const state = {
 			uci: args.uci,
 			status: args.status,
+			controlResult: args.controlResult,
+			controlStatus: args.controlStatus,
+			controlError: args.controlError,
+			controlDelay: args.controlDelay || 0,
+			statusDelay: 0,
 			counters: args.counters,
 			operatorAccess: !!args.operatorAccess,
 			advancedAccess: !!args.advancedAccess,
@@ -437,8 +442,20 @@ async function renderOverview(page, options) {
 					let params = Array.from(arguments);
 					state.rpcCalls.push({ object: spec.object, method: spec.method, params: params });
 
-					if (spec.object == 'mwan4' && spec.method == 'status')
-						return Promise.resolve(params[0] == 'counters' ? state.counters : state.status);
+					if (spec.object == 'mwan4' && spec.method == 'status') {
+						let result = params[0] == 'counters' ? state.counters : state.status;
+						return new Promise(function(resolve) { window.setTimeout(function() { resolve(result); }, state.statusDelay); });
+					}
+					if (spec.object == 'mwan4' && spec.method == 'control') {
+						return new Promise(function(resolve, reject) {
+							window.setTimeout(function() {
+								if (state.controlError) { reject(new Error(state.controlError)); return; }
+								let next = (state.controlStatus || {})[params[0]];
+								if (next) state.status = next;
+								resolve(state.controlResult);
+							}, state.controlDelay);
+						});
+					}
 					if (spec.object == 'session' && spec.method == 'access') {
 						let acl = params[1];
 						if (acl == 'luci-app-mwan4-operator')
@@ -513,6 +530,7 @@ async function renderOverview(page, options) {
 			},
 			setCounters: function(counters) { state.counters = counters; },
 			setStatus: function(status) { state.status = status; },
+			setStatusDelay: function(ms) { state.statusDelay = ms; },
 			setUci: function(uciData) { state.uci = uciData; }
 		};
 	}, {
@@ -521,6 +539,10 @@ async function renderOverview(page, options) {
 		commonSource: fs.readFileSync(commonPath, 'utf8'),
 		uci: options.uci || defaultUci(),
 		status: options.status || defaultStatus(),
+		controlResult: options.controlResult === undefined ? { ok: true } : options.controlResult,
+		controlStatus: options.controlStatus || {},
+		controlError: options.controlError,
+		controlDelay: options.controlDelay,
 		counters: options.counters || defaultCounters(),
 		operatorAccess: options.operatorAccess,
 		advancedAccess: options.advancedAccess == null ? true : options.advancedAccess,

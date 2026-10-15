@@ -2961,3 +2961,36 @@ msgstr ""
 #: luci-app-mwan4/htdocs/luci-static/resources/view/mwan4/status/diagnostics.js
 msgid "No ownership conflicts were reported."
 msgstr ""
+
+msgid "Control request was not acknowledged"
+msgstr ""
+
+msgid "Service did not reach the requested state. Check the system log."
+msgstr ""
+
+msgid "MultiWAN 4 service started."
+msgstr ""
+
+msgid "MultiWAN 4 service stopped."
+msgstr ""
+
+msgid "MultiWAN 4 service restarted."
+msgstr ""
+
+msgid "Saved WAN links and policies are preserved."
+msgstr ""
+
+msgid "Service stopped"
+msgstr ""
+
+msgid "Start the service to resume WAN tracking and policy routing."
+msgstr ""
+
+msgid "mwan4 is stopped. Traffic follows routing outside mwan4."
+msgstr ""
+
+msgid "Policy routing stopped"
+msgstr ""
+
+msgid "Stopped"
+msgstr ""

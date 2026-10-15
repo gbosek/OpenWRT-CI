@@ -3558,3 +3558,36 @@ msgstr "wan_backup"
 
 msgid "work_vpn"
 msgstr "work_vpn"
+
+msgid "Control request was not acknowledged"
+msgstr "后端未确认控制请求"
+
+msgid "Service did not reach the requested state. Check the system log."
+msgstr "服务未达到请求的状态，请检查系统日志。"
+
+msgid "MultiWAN 4 service started."
+msgstr "MWAN4 服务已启动。"
+
+msgid "MultiWAN 4 service stopped."
+msgstr "MWAN4 服务已停止。"
+
+msgid "MultiWAN 4 service restarted."
+msgstr "MWAN4 服务已重启。"
+
+msgid "Saved WAN links and policies are preserved."
+msgstr "已保存的 WAN 线路和分流策略保持不变。"
+
+msgid "Service stopped"
+msgstr "服务已停止"
+
+msgid "Start the service to resume WAN tracking and policy routing."
+msgstr "启动服务后恢复 WAN 探测和策略路由。"
+
+msgid "mwan4 is stopped. Traffic follows routing outside mwan4."
+msgstr "MWAN4 已停止，流量按 MWAN4 之外的路由转发。"
+
+msgid "Policy routing stopped"
+msgstr "策略路由已停止"
+
+msgid "Stopped"
+msgstr "已停止"

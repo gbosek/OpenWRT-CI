@@ -5,13 +5,21 @@
     "upstream_commit": "28b384183bdf7ab43bef52d3d8ae648ba2565610",
     "fork": "gbosek/mwan4",
     "branch": "xg2010g-compat",
-    "fork_commit": "3d3b8a0fb409454abbb76bd198ec002e55afa067"
+    "fork_commit": "c4059453c5f68a223b3fd7e1c54dc92ffb4f5640",
+    "version": "0.1.1-r8",
+    "local_adjustments": [
+      "Retain backported missing status timestamp handling"
+    ]
   },
   "frontend": {
     "upstream": "brauliobo/luci-app-mwan4",
     "upstream_commit": "4412343c4484477c98991d7c29df94289cd306af",
     "fork": "gbosek/luci-app-mwan4",
     "branch": "xg2010g-compat",
-    "fork_commit": "63a2eff9ce646201236d1d72935564ce4e23cc6d"
+    "fork_commit": "45be828857691a56430b92ce5852a2f9e95e9788",
+    "local_adjustments": [
+      "Retain full Simplified Chinese translations and translated health labels"
+    ],
+    "version": "1.0.0-r12"
   }
 }

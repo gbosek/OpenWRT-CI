@@ -316,10 +316,10 @@ function buildConnRow(conns) {
 function renderBox(item) {
 	var frontend = item.frontend || {};
 
-	return E('div', { 'class': 'ifacebox pon-optics-card', 'style': 'width: 100%; min-width: 0; max-width: none; margin: 0; box-sizing: border-box; flex: 1 1 100%' }, [
-		E('div', { 'class': 'ifacebox-head center active' },
-			E('strong', item.device)),
-		E('div', { 'class': 'ifacebox-body left' }, [
+	return E('div', { 'class': 'pon-optics-card', 'style': 'display: block; width: 100% !important; min-width: 0; max-width: none !important; margin: 0; box-sizing: border-box; flex: 1 1 100%; border: 1px solid ' + cBorder + '; border-radius: 12px; overflow: hidden' }, [
+		E('div', { 'class': 'ifacebox-head center active', 'style': 'width: 100%; max-width: none; box-sizing: border-box; padding: 10px 16px' },
+			E('strong', 'PON')),
+		E('div', { 'class': 'ifacebox-body left', 'style': 'width: 100%; max-width: none; box-sizing: border-box; padding: 16px' }, [
 			E('div', { 'style': S_TOP }, [
 				L.itemlist(E('span'), [
 					_('收光功率'), metric(frontend, 'rx_power_dbm', 'dBm', 2),
@@ -385,7 +385,7 @@ return baseclass.extend({
 		if (!data || !data.length)
 			return null;
 
-		return E('div', { 'id': 'pon_optics_table', 'class': 'pon-optics-table', 'style': 'display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; width: 100%' },
+		return E('div', { 'id': 'pon_optics_table', 'class': 'pon-optics-table', 'style': 'display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; width: 100% !important; max-width: none !important; min-width: 0; box-sizing: border-box' },
 			data.map(renderBox));
 	}
 });

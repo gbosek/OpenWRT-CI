@@ -45,6 +45,8 @@ if [[ "$WRT_CONFIG" == AIROHA ]]; then
 		*) echo "Unsupported multi-WAN variant: $WRT_MWAN" >&2; exit 1 ;;
 	esac
 	cat "$GITHUB_WORKSPACE/Config/$multiwan_config" >> ./.config
+	python3 "$GITHUB_WORKSPACE/Scripts/select-pon.py" . --variant "$WRT_NPU" --phase config
+	python3 "$GITHUB_WORKSPACE/Scripts/cpu_cores.py" .
 fi
 
 #手动调整的插件

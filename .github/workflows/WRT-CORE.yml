@@ -78,7 +78,7 @@ env:
 jobs:
   core:
     name: ${{inputs.WRT_SOURCE}} / ${{inputs.WRT_NPU}}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       cache_prefix: ${{steps.initialize-values.outputs.cache_prefix}}
       cache_key: ${{steps.clone-code.outputs.cache_key}}
@@ -87,7 +87,13 @@ jobs:
         uses: actions/checkout@main
 
       - name: Check compatibility boost and NPU adapters
-        run: python3 CPU/tests/run.py
+        run: |
+          python3 CPU/tests/run.py
+          python3 Packages/xg2010g-rps/tests/rps-test.py
+          python3 CPU/tests/pon-selection-test.py
+          python3 UI/tests/pon-install-test.py
+          python3 CPU/tests/driver-fixes-test.py
+          node UI/tests/overview-test.js
 
       - name: Cancel superseded boost builds
         if: endsWith(github.ref_name, '-boost')
@@ -217,6 +223,7 @@ jobs:
         run: |
           cd ./wrt/
 
+          python3 "$GITHUB_WORKSPACE/Scripts/select-pon.py" . --variant "$WRT_NPU" --phase feed
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
@@ -243,6 +250,7 @@ jobs:
 
           if [[ "$WRT_CONFIG" == "AIROHA" ]]; then
             python3 "$GITHUB_WORKSPACE/Scripts/check-mwan-build.py" --variant "$WRT_MWAN" --config .config
+            python3 "$GITHUB_WORKSPACE/Scripts/check-pon-build.py" . --variant "$WRT_NPU" --config-only
           fi
 
       - name: Download Packages
@@ -251,6 +259,13 @@ jobs:
           cd ./wrt/
 
           make download -j$(nproc)
+
+      - name: Prepare and verify upstream driver fixes
+        if: ${{ !inputs.WRT_TEST && inputs.WRT_CONFIG == 'AIROHA' }}
+        run: |
+          cd ./wrt/
+          make target/linux/prepare -j2 V=s
+          python3 "$GITHUB_WORKSPACE/Scripts/check-driver-fixes.py" --build-dir build_dir
 
       - name: Compile Firmware
         if: ${{ !inputs.WRT_TEST }}
@@ -271,6 +286,28 @@ jobs:
         run: |
           python3 "$GITHUB_WORKSPACE/Scripts/check-xg2010g-build.py" ./wrt
           python3 "$GITHUB_WORKSPACE/Scripts/check-compatible-boost.py" ./wrt
+          python3 "$GITHUB_WORKSPACE/Scripts/check-pon-build.py" ./wrt --variant "$WRT_NPU"
+          python3 "$GITHUB_WORKSPACE/Scripts/check-driver-fixes.py" --build-dir ./wrt/build_dir --compiled --report ./wrt/bin/targets/airoha/an7581/AN7581-DRIVER-FIXES-VERIFICATION.json
+
+      - name: Verify PON layout with actual firmware themes
+        id: pon-layout
+        if: ${{ !inputs.WRT_TEST && inputs.WRT_CONFIG == 'AIROHA' }}
+        run: |
+          npm ci --prefix "$GITHUB_WORKSPACE/UI/tests" --ignore-scripts --no-audit --no-fund
+          node "$GITHUB_WORKSPACE/UI/tests/node_modules/playwright/cli.js" install --with-deps --only-shell chromium
+          PON_ROOT="$(python3 -c 'from pathlib import Path; roots=list(Path("wrt/build_dir").glob("target-*/root-airoha")); assert len(roots)==1, roots; print(roots[0].resolve())')"
+          PON_TEST_ROOT="$PON_ROOT" \
+          PON_TEST_SCREENSHOTS="$RUNNER_TEMP/pon-layout/screenshots" \
+          PON_TEST_OUTPUT="$RUNNER_TEMP/pon-layout/results" \
+            node "$GITHUB_WORKSPACE/UI/tests/node_modules/playwright/cli.js" test --config="$GITHUB_WORKSPACE/UI/tests/playwright.config.js"
+
+      - name: Upload PON layout verification
+        if: always() && (steps.pon-layout.outcome == 'success' || steps.pon-layout.outcome == 'failure')
+        uses: actions/upload-artifact@v5
+        with:
+          name: PON-layout-${{ env.WRT_NPU }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/pon-layout
+          retention-days: 14
 
       - name: Save Build Cache
         if: ${{ !inputs.WRT_TEST && success() && steps.cache-restore.outputs.cache-hit != 'true' }}
@@ -308,6 +345,10 @@ jobs:
           fi
 
           cp ./files/etc/airoha-build-source.json ./upload/AIROHA-SOURCE.json
+          cp ./files/etc/an7581-driver-fixes.json ./upload/AN7581-DRIVER-FIXES-SOURCE.json
+          cp ./bin/targets/airoha/an7581/AN7581-DRIVER-FIXES-VERIFICATION.json ./upload/
+          cp ./files/etc/pon-status-layout.json ./upload/PON-STATUS-LAYOUT.json
+          if [ -f ./files/etc/pon-build-source.json ]; then cp ./files/etc/pon-build-source.json ./upload/PON-SOURCE.json; fi
           cp "$GITHUB_WORKSPACE/CPU-BOOST-SOURCE.json" ./upload/
           cp "$GITHUB_WORKSPACE/CPU-USAGE-SOURCE.json" ./upload/
           cp "$GITHUB_WORKSPACE/kernel-patches/airoha/999-xg2010g-bl31-compatible-overclock.patch" ./upload/
@@ -343,6 +384,8 @@ jobs:
             多 WAN 方案：${{env.WRT_MWAN_LABEL}}，准确来源见附件 ${{env.WRT_MWAN_SOURCE_FILE}}。
             包含多 WAN 中文界面、${{env.WRT_NPU}} NPU LuCI（准确来源见 AIROHA-SOURCE.json）、ttyd 中文界面、仓库原生四核 CPU 使用率、RPS 重启恢复、500–1400MHz 动态兼容超频（新实现，硬件稳定性未验证）和现有温度/PON 状态页。
             已加入 [PATCH net v2] net: airoha: keep PPE offload when NPU refuses flow stats。
+            新增上游 QDMA 配置重试、NPU 看门狗释放顺序修复；RX31 修复由原生 6.18.54 提供。发布前核对实际源码与 ARM64 对象，报告见 AN7581-DRIVER-FIXES-*.json。
+            包含 PON fullwidth-v2 满宽布局、MWAN4 停止反馈及 RPS 单实例修复。
             CONFIG_NET_AIROHA_FLOW_STATS=y；发布前检查内核源码、编译对象和固件软件包清单。
             切换多 WAN 实现后，需要按当前线路重新设置接口和策略。
             硬件卸载和双 WAN 功能仍需刷入后实机确认。

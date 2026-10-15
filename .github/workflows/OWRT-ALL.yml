@@ -3,14 +3,13 @@
 
 #CI项目
 name: XG2010G-PPE-MultiWAN
-run-name: XG2010G ${{ contains(github.ref_name, 'mwan3-nft') && 'MWAN3-nft' || 'MWAN4' }} with compatibility boost
+run-name: XG2010G MWAN4 + upstream driver fixes - naoki and luanmuc
 
 #CI计划
 on:
   push:
     branches:
-      - xg2010g-mwan4-naoki-boost
-      - xg2010g-mwan4-luanmuc-boost
+      - work/xg2010g-driver-fixes-20261015
   #手动编译
   workflow_dispatch:
     inputs:
@@ -38,13 +37,14 @@ jobs:
         CONFIG: [AIROHA]
         SOURCE: [VIKINGYFY/immortalwrt]
         BRANCH: [owrt]
+        NPU: [naoki, luanmuc]
 
     #调用公用编译核心WRT-CORE.yml
     uses: ./.github/workflows/WRT-CORE.yml
     with:
       #编译配置
       WRT_CONFIG: ${{matrix.CONFIG}}
-      WRT_NPU: ${{ contains(github.ref_name, 'luanmuc') && 'luanmuc' || 'naoki' }}
+      WRT_NPU: ${{matrix.NPU}}
       WRT_MWAN: ${{ contains(github.ref_name, 'mwan3-nft') && 'mwan3-nft' || 'mwan4' }}
       #默认主题
       WRT_THEME: aurora
