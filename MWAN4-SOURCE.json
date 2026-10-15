@@ -6,10 +6,12 @@
     "fork": "gbosek/mwan4",
     "branch": "xg2010g-compat",
     "fork_commit": "c4059453c5f68a223b3fd7e1c54dc92ffb4f5640",
-    "version": "0.1.1-r8",
+    "version": "0.1.1-r9",
     "local_adjustments": [
-      "Retain backported missing status timestamp handling"
-    ]
+      "Retain backported missing status timestamp handling",
+      "Family-aware DNS guard called at native startup, and owned DNS cleanup on native stop"
+    ],
+    "upstream_package_version": "0.1.1-r8"
   },
   "frontend": {
     "upstream": "brauliobo/luci-app-mwan4",

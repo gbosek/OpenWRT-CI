@@ -66,3 +66,5 @@ if [[ "${WRT_MWAN:-mwan4}" == mwan4 ]]; then
 fi
 
 mkdir -p files/etc
+
+python3 "$GITHUB_WORKSPACE/Scripts/apply-runtime-fixes.py" .

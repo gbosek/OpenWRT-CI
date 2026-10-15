@@ -94,6 +94,9 @@ jobs:
           python3 UI/tests/pon-install-test.py
           python3 CPU/tests/driver-fixes-test.py
           node UI/tests/overview-test.js
+          python3 Runtime/tests/runtime-test.py
+          python3 Runtime/tests/route-test.py
+          node Runtime/tests/export-test.js
 
       - name: Cancel superseded boost builds
         if: endsWith(github.ref_name, '-boost')
@@ -247,6 +250,7 @@ jobs:
           $GITHUB_WORKSPACE/Scripts/Settings.sh
 
           make defconfig -j$(nproc) && make clean -j$(nproc)
+          if [[ "$WRT_CONFIG" == AIROHA ]]; then python3 "$GITHUB_WORKSPACE/Scripts/check-runtime-config.py" .; fi
 
           if [[ "$WRT_CONFIG" == "AIROHA" ]]; then
             python3 "$GITHUB_WORKSPACE/Scripts/check-mwan-build.py" --variant "$WRT_MWAN" --config .config

@@ -25,6 +25,11 @@ def main():
         if existing.name != PATCH or existing.read_bytes() != origin.read_bytes():
             parser.error(f"conflicting patch order 931: {existing}")
     shutil.copyfile(origin, destination / PATCH)
+    for companion in ('932-net-airoha-return-sram-flush-failures.patch',
+                      '933-net-airoha-preserve-tc-template-on-idle-refresh.patch'):
+        reviewed = origin.parent / companion
+        assert reviewed.is_file(), f'Missing reviewed companion: {companion}'
+        shutil.copyfile(reviewed, destination / companion)
     text = re.sub(
         r"^(?:# CONFIG_NET_AIROHA_FLOW_STATS is not set|CONFIG_NET_AIROHA_FLOW_STATS=.*)\n?",
         "", text, flags=re.M,

@@ -63,3 +63,7 @@ if [[ "${WRT_TARGET^^}" == *"QUALCOMMAX"* ]]; then
 		echo "qualcommax set up nowifi successfully!"
 	fi
 fi
+
+if [[ "$WRT_CONFIG" == AIROHA ]]; then
+ python3 "$GITHUB_WORKSPACE/Scripts/apply-runtime-fixes.py" .
+fi
