@@ -9,10 +9,17 @@ version=(root/'target/linux/generic/kernel-6.18').read_text()
 assert re.search(r'^LINUX_VERSION-6\.18 = \.54$',version,re.M),'Expected Linux 6.18.54'
 assert 'LINUX_KERNEL_HASH-6.18.54 = 9df30b02dd8102bbd0be52556288ef6889ddbe7f1ddb96fbf847d0becf3eacac' in version
 config=(root/'.config').read_text()
-selected=set(re.findall(r'^CONFIG_PACKAGE_([^=]+)=[ym]$',config,re.M))
+selected=set(re.findall(r'^CONFIG_PACKAGE_([^=]+)=y$',config,re.M))
 assert {'ttyd','luci-app-ttyd','cpufreq','xg2010g-rps'}<=selected,'Required runtime packages missing'
-assert not any(x.startswith(('wpad','hostapd','wpa-supplicant')) or x in
- ('coremark','luci-app-coremark','iw','iwinfo','wireless-regdb','wifi-scripts','kmod-mac80211','kmod-cfg80211') for x in selected),'Unused WiFi stack selected'
+banned=sorted(x for x in selected if x.startswith(('wpad','hostapd','wpa-supplicant')) or x in
+ ('coremark','luci-app-coremark','iw','iwinfo','wireless-regdb','wifi-scripts','kmod-mac80211','kmod-cfg80211'))
+assert not banned, 'Unused WiFi/benchmark packages selected: '+', '.join(banned)
+# Airoha's shared target metadata can retain build-only (=m) candidates for
+# other boards. The XG2010G profile must subtract them; the final manifest/rootfs
+# gate still rejects every installed wireless package and automatic task.
+image=(root/'target/linux/airoha/image/an7581.mk').read_text()
+profile=re.search(r'^define Device/gemtek_xg2010g\n(.*?)^endef',image,re.M|re.S)
+assert profile and '-wpad-openssl -hostapd-common -wifi-scripts' in profile[1], 'XG2010G wireless profile exclusion missing'
 app=root/'package/custom/luci-app-airoha-npu'
 assert not (app/'root/etc/init.d/npu-jitter').exists()
 assert not (app/'root/usr/libexec/npu-jitter-daemon').exists()

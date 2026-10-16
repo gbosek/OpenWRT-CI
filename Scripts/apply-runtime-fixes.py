@@ -5,6 +5,20 @@ from pathlib import Path
 root = Path(sys.argv[1] if len(sys.argv)>1 else '.').resolve()
 repo = Path(__file__).resolve().parents[1]
 assert (root / 'target/linux/airoha').is_dir()
+# This source adds wpad-openssl to every Airoha target's DEFAULT_PACKAGES.
+# A package-level '=n' cannot override its per-device MODULE_DEFAULT selection.
+# Subtract it in the radio-less device profile, preserving WiFi-capable boards.
+image = root / 'target/linux/airoha/image/an7581.mk'
+if image.exists():
+    text=image.read_text()
+    pattern=r'(^define Device/gemtek_xg2010g\n)(.*?)(^endef)'
+    match=re.search(pattern,text,re.M|re.S)
+    assert match, 'XG2010G image profile missing'
+    body=match[2]
+    if '-wpad-openssl' not in body:
+        body += '  DEVICE_PACKAGES += -wpad-openssl -hostapd-common -wifi-scripts\n'
+        text=text[:match.start()]+match[1]+body+match[3]+text[match.end():]
+        image.write_text(text)
 for src in (repo / 'Runtime/root').rglob('*'):
     if not src.is_file(): continue
     dest = root / 'files' / src.relative_to(repo/'Runtime/root')
