@@ -389,7 +389,7 @@ jobs:
             多 WAN 方案：${{env.WRT_MWAN_LABEL}}，准确来源见附件 ${{env.WRT_MWAN_SOURCE_FILE}}。
             包含多 WAN 中文界面、${{env.WRT_NPU}} NPU LuCI（准确来源见 AIROHA-SOURCE.json）、ttyd 中文界面、仓库原生四核 CPU 使用率、RPS 重启恢复、500–1400MHz 动态兼容超频（新实现，硬件稳定性未验证）和现有温度/PON 状态页。
             已加入 [PATCH net v2] net: airoha: keep PPE offload when NPU refuses flow stats。
-            新增上游 QDMA 配置重试、NPU 看门狗释放顺序修复；RX31 修复由原生 6.18.54 提供。发布前核对实际源码与 ARM64 对象，报告见 AN7581-DRIVER-FIXES-*.json。
+            内核更新到 6.18.55，保留 QDMA 配置重试；NPU 看门狗释放顺序与 RX31 修复由原生内核提供，不重复打补丁。发布前核对实际源码、ARM64 对象与安装后的版本记录。
             包含 PON fullwidth-v2 满宽布局、MWAN4 停止反馈及 RPS 单实例修复。
             已修复 naoki ONU 对 firewall4 zone-device 卸载补丁的依赖，保留原 FullCone；共享 cpufreq 恢复原 ondemand 参数。
             CONFIG_NET_AIROHA_FLOW_STATS=y；发布前检查内核源码、编译对象和固件软件包清单。

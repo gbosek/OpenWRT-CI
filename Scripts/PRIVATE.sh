@@ -47,6 +47,7 @@ find ./package/custom -type f -path '*/root/usr/libexec/*' -exec chmod 0755 {} +
 kernel_config=./target/linux/airoha/an7581/config-6.18
 sed -i '/^# CONFIG_IP_ROUTE_MULTIPATH is not set$/d; /^CONFIG_IP_ROUTE_MULTIPATH=/d' "$kernel_config"
 echo 'CONFIG_IP_ROUTE_MULTIPATH=y' >> "$kernel_config"
+python3 "$GITHUB_WORKSPACE/Scripts/upgrade-kernel55.py" . --project ci
 python3 "$GITHUB_WORKSPACE/Scripts/apply-ppe-kernel.py" .
 python3 "$GITHUB_WORKSPACE/Scripts/apply-driver-fixes.py" . --project ci
 python3 "$GITHUB_WORKSPACE/Scripts/apply-compatible-boost.py" .

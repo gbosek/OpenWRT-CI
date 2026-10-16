@@ -1,0 +1,30 @@
+{
+  "kernel": "6.18.55",
+  "hardware_tested": false,
+  "full_queue_patches": 663,
+  "official_archive": {
+    "url": "https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.18.55.tar.xz",
+    "bytes": 154779312,
+    "sha256": "f410638061a165c12f42ab871d2f3fcd525515359b5faeee80969cff84524df9",
+    "seconds": 1.16
+  },
+  "source_patch_sha256": "c3b32171bdd4cd89797817cfc40f622983d3f83a3ee84a5712d206ac53324f0d",
+  "native_watchdog_upstream_commit": "4bdee8060d1e4581624e68fbd369b1afb14df4bc",
+  "compiled_arm64_objects": {
+    "drivers/net/ethernet/airoha/airoha_eth.o": "8f540648625b0bb8cfc74f3f53173faa4e5d5b7c9de7be0cb71f16992f06a513",
+    "drivers/net/ethernet/airoha/airoha_ppe.o": "5fda8c736477fffcbd34471e0dc07cfd38288108cd8e4743bd358473d9f5412a",
+    "drivers/net/ethernet/airoha/airoha_npu.o": "0508062f2baa1282986a24c0d9612e591c34a04a7c05a1f2c117298e13fb101d",
+    "drivers/net/ethernet/airoha/airoha_ppe_debugfs.o": "419a1b43f646067dce2481491648d2b687d84f0d562631783a0150f432085fb7",
+    "net/ipv4/tcp_bbr.o": "dcf5f5137821e14a1b6e1aaba3465da0b7947280e9015a55a791ad1c12245daa",
+    "net/ipv4/tcp_rate.o": "e573ec51bd89fb0a5b8a38a9329ad4577d93bc398ee53ab0564295a8a1afa4fd",
+    "net/ipv4/tcp_input.o": "4bbf4e043d467d0c8e393089e637a23d7f92cb331820efa52629853242e10a8b",
+    "net/ipv4/tcp_output.o": "7cce855040bc70b4c5fcddf8e4cde6f13988f10c49e91b61bbb818d40e4ccd44",
+    "net/ipv4/tcp_timer.o": "cefd8c9d3bbcaf697add249e14e0c4ee65475d8dac4789c8766f19aa622b14fd",
+    "drivers/pmdomain/mediatek/airoha-cpu-pmdomain.o": "71106d5cab55d49c28daa2699cda93f816f436ab5ee2c09cffdb0f7c8b660a39"
+  },
+  "ppe_function_cases": 16,
+  "trtcm_function_cases": 7,
+  "regression_groups": 8,
+  "provider_build_hook_fixtures": 2,
+  "scope": "Independent prepared 6.18.55 kernel, ARM64 objects, actual PPE/TRTCM functions, repeatable build hooks; no device operations"
+}
