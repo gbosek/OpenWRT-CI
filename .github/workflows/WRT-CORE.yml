@@ -264,6 +264,12 @@ jobs:
 
           make download -j$(nproc)
 
+      - name: Reconcile miniupnpd 2.3.11 feed patch
+        if: ${{ !inputs.WRT_TEST && inputs.WRT_CONFIG == 'AIROHA' }}
+        run: |
+          cd ./wrt/
+          python3 "$GITHUB_WORKSPACE/Scripts/fix-miniupnpd-feed.py" .
+
       - name: Prepare and verify upstream driver fixes
         if: ${{ !inputs.WRT_TEST && inputs.WRT_CONFIG == 'AIROHA' }}
         run: |
