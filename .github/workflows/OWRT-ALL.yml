@@ -3,7 +3,7 @@
 
 #CI项目
 name: XG2010G-PPE-MultiWAN
-run-name: XG2010G Linux 6.18.54 + PPE + boot/event fixes - naoki and luanmuc
+run-name: XG2010G 6.18.54 + PPE + compact responsive PON - naoki and luanmuc
 
 #CI计划
 on:
