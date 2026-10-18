@@ -268,6 +268,7 @@ jobs:
         if: ${{ !inputs.WRT_TEST && inputs.WRT_CONFIG == 'AIROHA' }}
         run: |
           cd ./wrt/
+          python3 "$GITHUB_WORKSPACE/CPU/tests/miniupnpd-feed-test.py" --source "$(find dl -maxdepth 1 -name 'miniupnpd-2.3.11.tar.*' -print -quit)"
           python3 "$GITHUB_WORKSPACE/Scripts/fix-miniupnpd-feed.py" .
 
       - name: Prepare and verify upstream driver fixes
