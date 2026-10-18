@@ -1,0 +1,10 @@
+{
+  "source_version": "2.3.11",
+  "source_sha256": "91994b127da735b2c97f19992e34420648c0e8c4ace8a4bcb0596e7685c48678",
+  "package_release": 2,
+  "patches": {
+    "040-improve-logging.patch": "c7cfb9e05be7ce9a40d1c56e8545c09e56714d63a15d62967932fe7d3ad3cf16",
+    "900-miniupnpd-format-xml-to-make-some-app-happy.patch": "6d2631186542b38e6102e2ff6c3136739088e3e13ac782c7ad34ab465a652c79"
+  },
+  "cross_compile_evidence": "output/system-review-20261018/miniupnpd-fix/cross-compile-result.json"
+}

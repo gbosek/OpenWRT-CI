@@ -39,6 +39,7 @@ for manifest in manifests:
     assert pkgs['xg2010g-rps'].startswith('20261013'), 'Old RPS package'
     assert re.match(r'^20261013-(?:r)?3$', pkgs['xg2010g-rps']), 'RPS boot/event policy missing'
     assert re.match(r'^0\.1\.1-(?:r)?10$', pkgs['mwan4']), 'MWAN4 routing fixes missing'
+    assert re.match(r'^2\.3\.11-(?:r)?2$', pkgs.get('miniupnpd-nftables','')), 'Rebased miniupnpd 2.3.11 feed package missing'
     assert re.match(r'^1\.0\.0-(?:r)?12$', pkgs['luci-app-mwan4']), 'MWAN4 stop confirmation missing'
     assert re.search(r'-(?:r)?9$', pkgs['luci-app-pon-status']), 'PON fullwidth-v3 package missing'
     assert not any(n in pkgs for n in ('mwan3', 'mwan3-nft', 'luci-app-mwan3')), 'Mixed MWAN stacks'
@@ -50,6 +51,9 @@ for manifest in manifests:
 roots = list((root / 'build_dir').glob('target-*/root-airoha'))
 assert len(roots) == 1, f'Expected one staged rootfs, got {len(roots)}'
 installed = roots[0]
+miniupnpd=(installed/'usr/sbin/miniupnpd').read_bytes()
+assert b'Listening for UPnP IGD (SOAP/HTTP) traffic on port %d/TCP' in miniupnpd, 'Rebased miniupnpd logging missing from binary'
+assert b'<NewInternalClient>%s</NewInternalClient>\r\n' in miniupnpd, 'Miniupnpd XML compatibility missing from binary'
 assert json.loads((installed / 'etc/airoha-build-source.json').read_text()) == meta
 assert b"popen('/usr/libexec/xg2010g-cpuusage')" in (installed / 'usr/share/rpcd/ucode/luci').read_bytes()
 assert 'cpuSampleDisplay(cpuusage)' in (installed / 'www/luci-static/resources/view/status/include/10_system.js').read_text()

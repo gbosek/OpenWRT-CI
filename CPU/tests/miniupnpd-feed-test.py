@@ -75,7 +75,23 @@ def main(source_archive):
         expect_assertion(lambda: fix.reconcile(root), 'Unexpected source hash was accepted')
         assert private_patch.exists(), 'Patch removed for an unreviewed archive'
 
-    print('PASS: 020/030 native fixes, pinned version/hash, mismatch preservation and idempotence')
+    with tempfile.TemporaryDirectory(prefix='miniupnpd-full-series-') as temporary:
+        root=Path(temporary);patches=fixture(root,source_archive)
+        make=patches.parent/'Makefile';make.write_text(make.read_text()+'PKG_RELEASE:=1\n')
+        for name in ['010-upnp-igdv2-compat.patch','020-descr-filter-fix.patch','030-allow-private-fix.patch','040-improve-logging.patch','900-miniupnpd-format-xml-to-make-some-app-happy.patch']:
+            shutil.copyfile(repo/'CPU/tests/fixtures'/('miniupnpd-'+name),patches/name)
+        assert fix.reconcile(root)
+        assert 'PKG_RELEASE:=2' in make.read_text()
+        fix.check_series(root)
+        before={p.name:p.read_bytes() for p in patches.iterdir()}
+        assert not fix.reconcile(root)
+        assert before=={p.name:p.read_bytes() for p in patches.iterdir()}
+        # An unknown, broken patch must fail preflight rather than be deleted.
+        unknown=patches/'999-unknown.patch';unknown.write_text('--- a/no-such-file\n+++ b/no-such-file\n@@ -1 +1 @@\n-old\n+new\n')
+        expect_assertion(lambda:fix.check_series(root),'Broken remaining patch passed full-series preflight')
+        assert unknown.exists()
+
+    print('PASS: 020/030 native fixes, rebased 040/900, full retained series, pinned version/hash, mismatch preservation and idempotence')
 
 
 if __name__ == '__main__':
