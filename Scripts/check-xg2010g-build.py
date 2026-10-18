@@ -118,4 +118,12 @@ driver_meta = json.loads((repo / 'AN7581-DRIVER-FIXES-SOURCE.json').read_text())
 driver_meta.update(project='ci', selected_baseline=driver_meta['baselines']['ci'])
 assert json.loads((installed / 'etc/an7581-driver-fixes.json').read_text()) == driver_meta, 'Installed upstream driver-fix provenance mismatch'
 print('Verified MWAN4 stop/native-init fixes, RPS boot/event policy, PON fullwidth-v3, WOL and Argon configuration')
+assert (installed/'etc/config/fstab').is_file(), 'Default fstab missing from delivered rootfs'
+boot = json.loads((installed/'etc/xg2010g-boot-fixes.json').read_text())
+assert boot['phy_patch_sha256'] == hashlib.sha256((repo/'kernel-patches/airoha'/boot['phy_patch']).read_bytes()).hexdigest()
+busybox_configs = list((root/'build_dir').glob('target-*/busybox-default/busybox-*/.config'))
+assert busybox_configs, 'Compiled BusyBox configuration missing'
+for busybox_config in busybox_configs:
+    assert 'CONFIG_FEATURE_SYSLOG_INFO=y' in busybox_config.read_text().splitlines(), 'BusyBox still maps INFO to ERR'
+print('Verified ROM fstab, boot fix provenance and compiled BusyBox INFO logging')
 print(variant + ': Latest Airoha snapshot, MWAN4, Chinese UI, four CPU cores, RPS boot/event policy and CPU/PON/LAN1/LAN2 temperature script verified in staged rootfs')

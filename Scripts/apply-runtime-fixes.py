@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """XG2010G boot/event policy and board-specific package selection."""
-import json, re, shutil, sys
+import json, re, shutil, sys, subprocess
 from pathlib import Path
 root = Path(sys.argv[1] if len(sys.argv)>1 else '.').resolve()
 repo = Path(__file__).resolve().parents[1]
 assert (root / 'target/linux/airoha').is_dir()
+subprocess.run([sys.executable, str(Path(__file__).with_name('apply-boot-log-fixes.py')), str(root)], check=True)
 # This source adds wpad-openssl to every Airoha target's DEFAULT_PACKAGES.
 # A package-level '=n' cannot override its per-device MODULE_DEFAULT selection.
 # Subtract it in the radio-less device profile, preserving WiFi-capable boards.
