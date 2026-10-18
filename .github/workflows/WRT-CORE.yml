@@ -299,6 +299,10 @@ jobs:
           python3 "$GITHUB_WORKSPACE/Scripts/check-compatible-boost.py" ./wrt
           python3 "$GITHUB_WORKSPACE/Scripts/check-pon-build.py" ./wrt --variant "$WRT_NPU"
           python3 "$GITHUB_WORKSPACE/Scripts/check-driver-fixes.py" --build-dir ./wrt/build_dir --compiled --report ./wrt/bin/targets/airoha/an7581/AN7581-DRIVER-FIXES-VERIFICATION.json
+          UCODE="$PWD/wrt/staging_dir/hostpkg/bin/ucode" python3 "$GITHUB_WORKSPACE/Runtime/tests/mwan4-default-off-test.py" ./wrt
+          UCODE="$PWD/wrt/staging_dir/hostpkg/bin/ucode" python3 "$GITHUB_WORKSPACE/Runtime/tests/routing-functions-test.py" ./wrt
+          python3 "$GITHUB_WORKSPACE/Runtime/tests/route-test.py"
+          python3 "$GITHUB_WORKSPACE/CPU/tests/network-defaults-test.py"
 
       - name: Verify PON layout with actual firmware themes
         id: pon-layout

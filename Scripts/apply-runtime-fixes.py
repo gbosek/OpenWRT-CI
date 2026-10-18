@@ -6,6 +6,7 @@ root = Path(sys.argv[1] if len(sys.argv)>1 else '.').resolve()
 repo = Path(__file__).resolve().parents[1]
 assert (root / 'target/linux/airoha').is_dir()
 subprocess.run([sys.executable, str(Path(__file__).with_name('apply-boot-log-fixes.py')), str(root)], check=True)
+subprocess.run([sys.executable, str(Path(__file__).with_name('apply-lan-leds.py')), str(root)], check=True)
 # This source adds wpad-openssl to every Airoha target's DEFAULT_PACKAGES.
 # A package-level '=n' cannot override its per-device MODULE_DEFAULT selection.
 # Subtract it in the radio-less device profile, preserving WiFi-capable boards.
@@ -76,3 +77,11 @@ if init.exists():
     if ': > /var/run/mwan4-rule-guard.stopped' not in text:
         text=text.replace('stop_service() {', 'stop_service() {\n\t: > /var/run/mwan4-rule-guard.stopped',1)
     init.write_text(text)
+
+# The lifecycle/UI installer retains manual stop/start state across reloads.
+import importlib.util
+spec = importlib.util.spec_from_file_location('mwan4_default_off', repo/'Scripts/apply-mwan4-default-off.py')
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+module.install(root)
+subprocess.run([sys.executable, str(Path(__file__).with_name('apply-mwan4-routing-fixes.py')), str(root)], check=True)

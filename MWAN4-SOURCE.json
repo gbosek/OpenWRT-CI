@@ -6,10 +6,15 @@
     "fork": "gbosek/mwan4",
     "branch": "xg2010g-compat",
     "fork_commit": "c4059453c5f68a223b3fd7e1c54dc92ffb4f5640",
-    "version": "0.1.1-r9",
+    "version": "0.1.1-r10",
     "local_adjustments": [
       "Retain backported missing status timestamp handling",
-      "Family-aware DNS guard called at native startup, and owned DNS cleanup on native stop"
+      "Family-aware DNS guard called at native startup, and owned DNS cleanup on native stop",
+      "DNS rules precede WAN marks; migrate only ledger-owned legacy rules",
+      "Recover missing PPP IPv4 table defaults on startup/interface events only",
+      "Do not cache blackhole/unreachable sticky marks; synchronize snapshot routes with replace",
+      "Fresh preset keeps IPv6 source-prefix routing and uses received ISP DNS for multi-packet tracking",
+      "Explicit start/stop governs autostart; status refresh and saved configuration do not start a stopped service"
     ],
     "upstream_package_version": "0.1.1-r8"
   },

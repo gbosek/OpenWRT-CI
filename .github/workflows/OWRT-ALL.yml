@@ -3,7 +3,7 @@
 
 #CI项目
 name: XG2010G-PPE-MultiWAN
-run-name: XG2010G 6.18.55 + PPE + compact CPU and PON - naoki and luanmuc
+run-name: XG2010G 6.18.55 + DNS routing and LAN LED fixes - naoki and luanmuc
 
 #CI计划
 on:
