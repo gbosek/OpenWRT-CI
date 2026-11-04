@@ -9,10 +9,6 @@ on:
   #手动编译
   workflow_dispatch:
     inputs:
-      DIAGNOSE:
-        description: 'Inspect a previous failed run'
-        type: boolean
-        default: false
       PACKAGE:
         description: '手动调整插件包，多个请用\n符号隔开。'
         required: false
@@ -28,36 +24,7 @@ permissions: write-all
 
 #CI任务
 jobs:
-  diagnose:
-    if: ${{ inputs.DIAGNOSE }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Read previous job log
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set +e
-          gh api --allow-escape-sequences repos/${{ github.repository }}/actions/jobs/126438619136/logs > /tmp/xg-log 2>/tmp/xg-error
-          result=$?
-          echo "::notice::Log retrieval exit: $result; bytes: $(wc -c </tmp/xg-log)"
-          if [ "$result" != 0 ]; then
-            python3 - <<'PYCODE'
-          from pathlib import Path
-          text = Path('/tmp/xg-error').read_text(errors='replace')
-          print('::error::Log download failed: ' + ('Forbidden or inaccessible storage' if 'Forbidden' in text else text[:300].replace('%', '%25').replace('\n', ' ')))
-          PYCODE
-            exit "$result"
-          fi
-          python3 - <<'PYCODE'
-          from pathlib import Path
-          lines = Path('/tmp/xg-log').read_text(errors='replace').splitlines()
-          import re
-          matches = [i for i, line in enumerate(lines) if '##[error]' in line]
-          lines = [line for i in matches for line in lines[max(0, i-8):i+2]][-30:]
-          text = '\n'.join(re.sub(r'\x1b\[[0-9;]*[A-Za-z]', '', line) for line in lines)
-          print('::notice::' + text.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A'))
   config:
-    if: ${{ !inputs.DIAGNOSE }}
     name: ${{matrix.CONFIG}}
     strategy:
       fail-fast: false

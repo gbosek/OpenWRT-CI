@@ -272,6 +272,18 @@ jobs:
           du -h --max-depth=1
           echo "======================="
 
+      - name: Preserve XG2010G build output
+        if: ${{ !inputs.WRT_TEST && inputs.WRT_CONFIG == 'XG2010G' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: xg2010g-build-output-${{github.run_id}}
+          path: |
+            ./wrt/bin/targets/airoha/an7581/*gemtek_xg2010g*
+            ./wrt/bin/targets/airoha/an7581/*.manifest
+            ./wrt/bin/targets/airoha/an7581/sha256sums
+          if-no-files-found: error
+          retention-days: 7
+
       - name: Package Firmware
         run: |
           cd ./wrt/ && mkdir ./upload/
@@ -281,10 +293,16 @@ jobs:
           if [[ "$WRT_TEST" != 'true' ]]; then
             if [[ "$WRT_CONFIG" == XG2010G ]]; then
               find ./bin/targets/ -type f -name '*gemtek_xg2010g*sysupgrade.itb' | grep -q . || { echo 'XG2010G sysupgrade image missing'; exit 1; }
-              manifest=$(find ./bin/targets/ -type f -name '*gemtek_xg2010g*.manifest' | head -n1)
-              test -n "$manifest" || { echo 'XG2010G manifest missing'; exit 1; }
+              mapfile -t manifests < <(find ./bin/targets/ -type f -name '*.manifest')
+              manifest=''
+              for candidate in "${manifests[@]}"; do
+                if [[ "$candidate" == *gemtek_xg2010g* ]]; then manifest="$candidate"; break; fi
+              done
+              if [[ -z "$manifest" && ${#manifests[@]} -eq 1 ]]; then manifest="${manifests[0]}"; fi
+              test -n "$manifest" || { echo '::error::Cannot identify the XG2010G package manifest'; printf '%s\n' "${manifests[@]}"; exit 1; }
+              echo "Checking package manifest: $manifest"
               for package in mwan4 luci-app-mwan4 luci-i18n-mwan4-zh-cn luci-app-airoha-npu luci-i18n-airoha-npu-zh-cn luci-app-pon-status; do
-                grep -q "^${package} - " "$manifest" || { echo "Missing package in manifest: $package"; exit 1; }
+                grep -q "^${package} - " "$manifest" || { echo "::error::Missing package in manifest: $package"; exit 1; }
               done
             fi
             echo "WRT_KVER=$(find ./bin/targets/ -type f -name "*.manifest" -exec grep -oP '^kernel - \K[\d\.]+' {} \;)" >> $GITHUB_ENV
