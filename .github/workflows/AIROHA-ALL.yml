@@ -52,7 +52,8 @@ jobs:
           from pathlib import Path
           lines = Path('/tmp/xg-log').read_text(errors='replace').splitlines()
           import re
-          lines = lines[-30:]
+          matches = [i for i, line in enumerate(lines) if '##[error]' in line]
+          lines = [line for i in matches for line in lines[max(0, i-8):i+2]][-30:]
           text = '\n'.join(re.sub(r'\x1b\[[0-9;]*[A-Za-z]', '', line) for line in lines)
           print('::notice::' + text.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A'))
   config:
