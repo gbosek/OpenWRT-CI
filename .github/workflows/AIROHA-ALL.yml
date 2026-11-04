@@ -37,7 +37,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set +e
-          gh api repos/${{ github.repository }}/actions/jobs/126438619136/logs > /tmp/xg-log 2>/tmp/xg-error
+          gh api --allow-escape-sequences repos/${{ github.repository }}/actions/jobs/126438619136/logs > /tmp/xg-log 2>/tmp/xg-error
           result=$?
           echo "::notice::Log retrieval exit: $result; bytes: $(wc -c </tmp/xg-log)"
           if [ "$result" != 0 ]; then
