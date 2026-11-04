@@ -51,9 +51,10 @@ jobs:
           python3 - <<'PYCODE'
           from pathlib import Path
           lines = Path('/tmp/xg-log').read_text(errors='replace').splitlines()
-          lines = [x for x in lines if '\tPackage Firmware\t' in x][-30:]
+          lines = lines[-80:]
           for line in lines:
-              text = line.split('\t', 2)[-1].replace('%', '%25').replace('\r', '%0D')
+              import re
+              text = re.sub(r'\x1b\[[0-9;]*[A-Za-z]', '', line).replace('%', '%25').replace('\r', '%0D')
               print('::notice::' + text)
           PYCODE
   config:
