@@ -9,6 +9,10 @@ on:
   #手动编译
   workflow_dispatch:
     inputs:
+      DIAGNOSE:
+        description: 'Inspect a previous failed run'
+        type: boolean
+        default: false
       PACKAGE:
         description: '手动调整插件包，多个请用\n符号隔开。'
         required: false
@@ -24,7 +28,36 @@ permissions: write-all
 
 #CI任务
 jobs:
+  diagnose:
+    if: ${{ inputs.DIAGNOSE }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Read previous job log
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          gh api repos/${{ github.repository }}/actions/jobs/126438619136/logs > /tmp/xg-log 2>/tmp/xg-error
+          result=$?
+          echo "::notice::Log retrieval exit: $result; bytes: $(wc -c </tmp/xg-log)"
+          if [ "$result" != 0 ]; then
+            python3 - <<'PYCODE'
+          from pathlib import Path
+          text = Path('/tmp/xg-error').read_text(errors='replace')
+          print('::error::Log download failed: ' + ('Forbidden or inaccessible storage' if 'Forbidden' in text else text[:300].replace('%', '%25').replace('\n', ' ')))
+          PYCODE
+            exit "$result"
+          fi
+          python3 - <<'PYCODE'
+          from pathlib import Path
+          lines = Path('/tmp/xg-log').read_text(errors='replace').splitlines()
+          lines = [x for x in lines if '\tPackage Firmware\t' in x][-30:]
+          for line in lines:
+              text = line.split('\t', 2)[-1].replace('%', '%25').replace('\r', '%0D')
+              print('::notice::' + text)
+          PYCODE
   config:
+    if: ${{ !inputs.DIAGNOSE }}
     name: ${{matrix.CONFIG}}
     strategy:
       fail-fast: false
