@@ -51,12 +51,10 @@ jobs:
           python3 - <<'PYCODE'
           from pathlib import Path
           lines = Path('/tmp/xg-log').read_text(errors='replace').splitlines()
-          lines = lines[-80:]
-          for line in lines:
-              import re
-              text = re.sub(r'\x1b\[[0-9;]*[A-Za-z]', '', line).replace('%', '%25').replace('\r', '%0D')
-              print('::notice::' + text)
-          PYCODE
+          import re
+          lines = lines[-100:]
+          text = '\n'.join(re.sub(r'\x1b\[[0-9;]*[A-Za-z]', '', line) for line in lines)
+          print('::notice::' + text.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A'))
   config:
     if: ${{ !inputs.DIAGNOSE }}
     name: ${{matrix.CONFIG}}
