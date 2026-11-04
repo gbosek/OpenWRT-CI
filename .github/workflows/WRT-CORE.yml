@@ -189,6 +189,8 @@ jobs:
 
       - name: Custom Settings
         run: |
+          set -E
+          trap 'code=$?; echo "::error::Custom Settings failed at line ${LINENO} (exit ${code}): ${BASH_COMMAND}"' ERR
           cd ./wrt/
 
           if [[ "${WRT_CONFIG,,}" == *"test"* ]]; then
@@ -203,9 +205,9 @@ jobs:
           make defconfig -j$(nproc) && make clean -j$(nproc)
           if [[ "$WRT_CONFIG" == XG2010G ]]; then
             for symbol in TARGET_airoha_an7581_DEVICE_gemtek_xg2010g PACKAGE_mwan4 PACKAGE_luci-app-mwan4 PACKAGE_luci-i18n-mwan4-zh-cn PACKAGE_luci-app-airoha-npu PACKAGE_luci-i18n-airoha-npu-zh-cn PACKAGE_luci-app-pon-status; do
-              grep -qx "CONFIG_${symbol}=y" .config || { echo "Missing configuration: $symbol"; exit 1; }
+              grep -qx "CONFIG_${symbol}=y" .config || { echo "::error::Missing configuration: $symbol"; exit 1; }
             done
-            if grep -qx 'CONFIG_TARGET_ALL_PROFILES=y' .config; then echo 'Unexpected all profiles selection'; exit 1; fi
+            if grep -qx 'CONFIG_TARGET_ALL_PROFILES=y' .config; then echo '::error::Unexpected all profiles selection'; exit 1; fi
           fi
 
       - name: Prepare Rust Toolchain

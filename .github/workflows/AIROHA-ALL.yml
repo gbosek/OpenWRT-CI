@@ -24,22 +24,6 @@ permissions: write-all
 
 #CI任务
 jobs:
-  previous_failure_diagnostics:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Summarize previous configuration failure
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh api repos/${{ github.repository }}/actions/jobs/126433776745/logs > /tmp/previous-job.log
-          python3 - <<'PYCODE'
-          from pathlib import Path
-          lines = Path('/tmp/previous-job.log').read_text(errors='replace').splitlines()
-          lines = [line for line in lines if '\tCustom Settings\t' in line][-35:]
-          for line in lines:
-              message = line.split('\t', 2)[-1].replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
-              print('::notice::' + message)
-          PYCODE
   config:
     name: ${{matrix.CONFIG}}
     strategy:
