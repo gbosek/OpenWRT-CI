@@ -128,6 +128,10 @@ jobs:
           git clone --depth=1 --single-branch --branch $WRT_BRANCH $WRT_REPO ./wrt/
 
           cd ./wrt/
+          if [[ "$WRT_CONFIG" == XG2010G ]]; then
+            git fetch --depth=1 origin a8d4a44c8ede4c703e8866fbf709b34dd1506294
+            git checkout --detach FETCH_HEAD
+          fi
           WRT_HASH=$(git rev-parse HEAD)
           echo "WRT_HASH=$WRT_HASH" >> $GITHUB_ENV
           echo "WRT_CACHE_KEY=$WRT_CACHE_PREFIX-$WRT_HASH" >> $GITHUB_ENV
@@ -179,6 +183,9 @@ jobs:
           $GITHUB_WORKSPACE/Scripts/Packages.sh
           $GITHUB_WORKSPACE/Scripts/Handles.sh
           $GITHUB_WORKSPACE/.github/scripts/prepare-i2c-tools.sh
+          if [[ "$WRT_CONFIG" == XG2010G ]]; then
+            $GITHUB_WORKSPACE/Scripts/xg2010g-packages.sh
+          fi
 
       - name: Custom Settings
         run: |
@@ -194,6 +201,12 @@ jobs:
           $GITHUB_WORKSPACE/.github/scripts/prepare-build-host.sh
 
           make defconfig -j$(nproc) && make clean -j$(nproc)
+          if [[ "$WRT_CONFIG" == XG2010G ]]; then
+            for symbol in TARGET_airoha_an7581_DEVICE_gemtek_xg2010g PACKAGE_mwan4 PACKAGE_luci-app-mwan4 PACKAGE_luci-i18n-mwan4-zh-cn PACKAGE_luci-app-airoha-npu PACKAGE_luci-i18n-airoha-npu-zh-cn PACKAGE_luci-app-pon-status; do
+              grep -qx "CONFIG_${symbol}=y" .config || { echo "Missing configuration: $symbol"; exit 1; }
+            done
+            if grep -qx 'CONFIG_TARGET_ALL_PROFILES=y' .config; then echo 'Unexpected all profiles selection'; exit 1; fi
+          fi
 
       - name: Prepare Rust Toolchain
         if: ${{ !inputs.WRT_TEST }}
@@ -264,6 +277,14 @@ jobs:
           cp -f ./.config ./upload/Config-"$WRT_CONFIG"-"$WRT_INFO"-"$WRT_BRANCH"-"$WRT_DATE".txt
 
           if [[ "$WRT_TEST" != 'true' ]]; then
+            if [[ "$WRT_CONFIG" == XG2010G ]]; then
+              find ./bin/targets/ -type f -name '*gemtek_xg2010g*sysupgrade.itb' | grep -q . || { echo 'XG2010G sysupgrade image missing'; exit 1; }
+              manifest=$(find ./bin/targets/ -type f -name '*gemtek_xg2010g*.manifest' | head -n1)
+              test -n "$manifest" || { echo 'XG2010G manifest missing'; exit 1; }
+              for package in mwan4 luci-app-mwan4 luci-i18n-mwan4-zh-cn luci-app-airoha-npu luci-i18n-airoha-npu-zh-cn luci-app-pon-status; do
+                grep -q "^${package} - " "$manifest" || { echo "Missing package in manifest: $package"; exit 1; }
+              done
+            fi
             echo "WRT_KVER=$(find ./bin/targets/ -type f -name "*.manifest" -exec grep -oP '^kernel - \K[\d\.]+' {} \;)" >> $GITHUB_ENV
             echo "WRT_LIST=$(find ./bin/targets/ -type f -name "*.manifest" -exec grep -oP '^luci-(app|theme)[^ ]*' {} \; | tr '\n' ' ')" >> $GITHUB_ENV
 
